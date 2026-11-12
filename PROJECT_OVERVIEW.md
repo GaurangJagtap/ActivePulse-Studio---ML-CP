@@ -9,7 +9,7 @@
 - **Platform Name**: ActivePulse Studio
 - **Problem Statement (PS)**: In real-world machine learning deployments, raw unlabeled data is cheap and abundant, but expert human annotation is prohibitively expensive ($15–$50/hour), slow, and bottlenecked by human bandwidth. Crucially, standard random data labeling wastes over 70% of annotator effort on easy, obvious, or near-identical samples that contribute virtually zero new learning signal to the model.
 - **Objective**: Design, implement, and benchmark an end-to-end Active Learning Platform combining PyTorch, skorch, and modAL/Label Studio that algorithmically prioritizes the most informative, uncertain, and diverse samples for human annotation—closing the feedback loop between model uncertainty, human labeling, and continuous retraining.
-- **Tech Stack**: Python 3.11, PyTorch 2.14+, skorch 1.4+, modAL-python, scikit-learn, SQLite / SQLAlchemy, Streamlit, Plotly, pytest.
+- **Tech Stack**: Python 3.11+, PyTorch, skorch, modAL-python, scikit-learn, SQLite / SQLAlchemy, FastAPI, React, TypeScript, Vite, Tailwind CSS, Recharts, Plotly.js, pytest.
 - **Expected Outcome**:
   1. Achieve target model accuracy with **30% to 50% fewer human-labeled samples** compared to standard uniform random selection.
   2. Prove higher Area Under the Learning Curve (ALC) and lower Expected Calibration Error (ECE) across multi-seed evaluations with 95% Confidence Intervals.
@@ -167,23 +167,16 @@ Solves the fundamental flaw of uncertainty sampling in batch mode (selecting $K$
 
 ---
 
-## 7. The ActivePulse Studio Web Interface (`dashboard/app.py`)
+## 7. The ActivePulse Studio Web Interface (`frontend/` + `backend/`)
 
-The platform includes a modern Mission Control interface running at `http://localhost:8501`:
+The platform now uses a React + TypeScript + FastAPI architecture (replacing the legacy Streamlit prototype):
 
-1. **Top Control Strip**: Direct selection of Domain (CIFAR-10 / AG News), Query Algorithm, Batch Size ($K$), Rounds, Seed, and the primary execution trigger.
-2. **5-Stage Pipeline Status Tracker**: Live visual indicator tracking Data Intake $\rightarrow$ Retraining $\rightarrow$ Calibration $\rightarrow$ Scoring $\rightarrow$ Holdout Evaluation.
-3. **4 Executive Stat Cards**: Holdout Test Accuracy with delta gain ($\Delta$), Annotation Cost Saved in real dollars ($) and hours, Percentage of dataset labeled, and Calibration ECE.
-4. **Workspace 1 (🛰️ Cockpit & Latent Embeddings)**:
-   - **2D PCA Latent Space**: Interactive scatter plot projecting high-dimensional feature embeddings to 2D. Shows Unlabeled Pool (gray), Already Labeled (green), and Newly Queried Batch (bright red) in real time!
-   - **Interactive Learning Curve**: Plotly curve with smooth spline interpolation and glowing markers.
-   - **Engineering Telemetry Log**: Table tracking round-by-round metrics.
-5. **Workspace 2 (🔬 Human Annotation Studio)**:
-   - Detailed cards for every queried sample showing Ground Truth, Model Guess, Top Confidence, and an interactive **class probability distribution bar chart**.
-6. **Workspace 3 (⚖️ Strategy Head-to-Head Arena)**:
-   - Multi-seed benchmark table and confidence interval curves with 95% shaded bands.
-7. **Workspace 4 (📖 Academic Problem Statement & Math)**:
-   - Complete project framing and mathematical formulas for all strategies.
+1. **Overview Dashboard**: Holdout accuracy, Macro-F1, labeled vs. unlabeled counts, budget utilization, cost savings, learning curve, pipeline tracker, and recent run activity.
+2. **Dataset Explorer**: CIFAR-10 and AG News overview, deterministic/DB split breakdown, class distribution chart, and sample previews.
+3. **Active Learning Lab**: Full experiment configuration (dataset, model, strategy, mode, budget, seed), live polling progress, interactive Plotly.js 2D PCA projection, Recharts learning curve, and per-sample uncertainty diagnostics.
+4. **Annotation Studio**: Dedicated blind human-in-the-loop labeling workspace (ground truth hidden prior to submission), model suggestions/probabilities, round retraining trigger, annotation audit log, and Phase 3 Label Studio webhook readiness.
+5. **Benchmark Arena**: Multi-seed strategy comparison vs. Random baseline, ALC, Label Reduction %, ECE, interactive comparison charts, and CSV export.
+6. **Experiment History**: Centralized run ledger, side-by-side experiment comparison, detail inspector, and CSV export.
 
 ---
 
@@ -278,18 +271,34 @@ al-platform/
 │       ├── metrics.py                  # Accuracy, Macro-F1, ECE, NLL
 │       ├── learning_curve.py           # LearningCurveTracker
 │       └── savings.py                  # ALC, labels-to-target, % label reduction
-├── dashboard/
-│   └── app.py                          # ActivePulse Studio Streamlit application
+├── backend/
+│   └── api/
+│       ├── main.py                     # FastAPI application entrypoint & CORS
+│       ├── config.py                   # Environment-driven API configuration
+│       ├── routes/                     # REST endpoints (health, datasets, experiments, annotations, benchmarks)
+│       ├── schemas/                    # Pydantic request/response contracts
+│       └── services/                   # Bridges FastAPI to src/ ML & SQLite modules
+├── frontend/
+│   ├── package.json                    # React, TypeScript, Vite, Tailwind, Recharts, Plotly.js
+│   └── src/
+│       ├── charts/                     # Recharts curves/bars & Plotly 2D PCA projection
+│       ├── components/                 # Reusable UI & shared metric/status components
+│       ├── layouts/                    # Persistent dark navy sidebar & top bar
+│       ├── pages/                      # 6 workspaces (Overview, Datasets, Lab, Annotation, Benchmarks, History)
+│       ├── services/api.ts             # Typed FastAPI REST client
+│       └── types/api.ts                # TypeScript interfaces
 ├── scripts/
 │   ├── run_simulation.py               # CLI single-strategy simulation runner
 │   └── run_benchmark.py                # Multi-strategy, multi-seed benchmark runner
 ├── tests/
 │   ├── test_phase1.py                  # Data splits, state machine, model tests
-│   └── test_strategies.py              # Strategy selection, modAL adapters, savings tests
+│   ├── test_strategies.py              # Strategy selection, modAL adapters, savings tests
+│   └── test_api.py                     # FastAPI endpoint & HITL workflow integration tests
 ├── results/                            # Benchmark artifacts
 │   ├── benchmark_savings.csv           # Benchmark summary table (CSV)
 │   ├── benchmark_savings.md            # Benchmark summary table (Markdown)
 │   └── learning_curves.png             # Learning curves chart with 95% CI bands
+├── README.md                           # Installation, startup & architecture guide
 ├── PROJECT_OVERVIEW.md                 # Master Technical Documentation
 ├── PRESENTATION_CHEAT_SHEET.md         # Viva defense script & glossary
 └── MILESTONE_50_AND_REMAINING_ROADMAP.md # 50% milestone guide & 100% roadmap
@@ -299,9 +308,9 @@ al-platform/
 
 ## 11. How to Execute All Commands
 
-### 1. Run the Complete Test Suite (18/18 Passing)
+### 1. Run the Complete Test Suite
 ```powershell
-.\.venv\Scripts\pytest -v tests/
+.\.venv\Scripts\python.exe -m pytest -v tests/
 ```
 
 ### 2. Run the Multi-Seed Benchmark Runner
@@ -309,8 +318,13 @@ al-platform/
 .\.venv\Scripts\python scripts/run_benchmark.py --strategies random entropy hybrid --seeds 42 43 --rounds 3 --batch-size 15 --epochs 3 --synthetic --max-samples 500 --output-dir results
 ```
 
-### 3. Launch ActivePulse Studio in Your Browser
+### 3. Launch ActivePulse Studio (Backend + Frontend)
 ```powershell
-.\.venv\Scripts\streamlit run dashboard/app.py
+# Terminal 1: FastAPI Backend
+.\.venv\Scripts\python.exe -m uvicorn backend.api.main:app --host 127.0.0.1 --port 8000 --reload
+
+# Terminal 2: React Frontend
+cd frontend
+npm run dev
 ```
-Access at: **`http://localhost:8501`**
+Access the UI at **`http://localhost:5173`** and FastAPI Swagger docs at **`http://127.0.0.1:8000/docs`**.
