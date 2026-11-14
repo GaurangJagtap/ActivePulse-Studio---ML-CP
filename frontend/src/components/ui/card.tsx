@@ -1,19 +1,38 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-xl border border-[#E2E8F0] bg-[#FFFFFF] text-[#172033] shadow-card",
-      className
-    )}
-    {...props}
-  />
-));
+export type CardTone =
+  | "default"
+  | "secondary"
+  | "blue"
+  | "lavender"
+  | "mint";
+
+const TONE_CLASSES: Record<CardTone, string> = {
+  default: "border-[#D5DDF2] bg-[#F3F5FD]",
+  secondary: "border-[#D5DDF2] bg-[#EEF1FB]",
+  blue: "border-[#C7D5FA] bg-[#DCE5FF]/65",
+  lavender: "border-[#D9CDF6] bg-[#EAE1FA]/65",
+  mint: "border-[#BDE5DA] bg-[#D9F0EA]/65",
+};
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  tone?: CardTone;
+}
+
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, tone = "default", ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-2xl border text-[#263452] shadow-card transition-all duration-200",
+        TONE_CLASSES[tone],
+        className
+      )}
+      {...props}
+    />
+  )
+);
 Card.displayName = "Card";
 
 export const CardHeader = React.forwardRef<
@@ -35,7 +54,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-sm font-semibold tracking-tight text-[#172033]",
+      "text-sm font-semibold tracking-tight text-[#263452]",
       className
     )}
     {...props}
@@ -62,4 +81,3 @@ export const CardContent = React.forwardRef<
   <div ref={ref} className={cn("p-5 pt-2", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
-

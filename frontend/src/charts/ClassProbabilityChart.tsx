@@ -44,23 +44,24 @@ export function ClassProbabilityChart({
             type="category"
             dataKey="name"
             width={85}
-            tick={{ fontSize: 11, fill: "#172033" }}
+            tick={{ fontSize: 11, fill: "#263452" }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#FFFFFF",
-              borderColor: "#E2E8F0",
-              borderRadius: "8px",
+              backgroundColor: "#F3F5FD",
+              borderColor: "#C7D3F0",
+              borderRadius: "10px",
               fontSize: "12px",
+              color: "#263452",
             }}
             formatter={(val: number) => [`${val}%`, "Probability"]}
           />
-          <Bar dataKey="probability" radius={[0, 4, 4, 0]}>
+          <Bar dataKey="probability" radius={[0, 6, 6, 0]}>
             {data.map((entry) => (
               <Cell
                 key={entry.name}
                 fill={
-                  entry.name === predictedClassName ? "#2563EB" : "#94A3B8"
+                  entry.name === predictedClassName ? "#4568D9" : "#9AAAD0"
                 }
               />
             ))}

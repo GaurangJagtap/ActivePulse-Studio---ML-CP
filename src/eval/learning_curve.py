@@ -15,6 +15,8 @@ class RoundMetric:
     test_f1: float
     ece: Optional[float] = None
     temperature: Optional[float] = None
+    nll: Optional[float] = None
+    train_time: Optional[float] = None
 
 
 class LearningCurveTracker:
@@ -33,6 +35,8 @@ class LearningCurveTracker:
         test_f1: float,
         ece: Optional[float] = None,
         temperature: Optional[float] = None,
+        nll: Optional[float] = None,
+        train_time: Optional[float] = None,
     ) -> RoundMetric:
         metric = RoundMetric(
             round_num=round_num,
@@ -43,8 +47,16 @@ class LearningCurveTracker:
             test_f1=test_f1,
             ece=ece,
             temperature=temperature,
+            nll=nll,
+            train_time=train_time,
         )
+        # Replace existing entry for same round_num if resuming/updating
+        for idx, existing in enumerate(self.history):
+            if existing.round_num == round_num:
+                self.history[idx] = metric
+                return metric
         self.history.append(metric)
+        self.history.sort(key=lambda m: m.round_num)
         return metric
 
     def to_dataframe(self) -> pd.DataFrame:

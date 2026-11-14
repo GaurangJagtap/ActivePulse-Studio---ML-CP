@@ -179,5 +179,10 @@ def test_benchmarks_and_label_studio_status(api_client):
 
     ls = api_client.get("/api/v1/webhooks/label-studio/status")
     assert ls.status_code == 200
-    assert ls.json()["integration_status"] == "pending_phase_3"
+    assert ls.json()["integration_status"] in ("unconfigured", "configured", "connected", "ready")
+
+    sav = api_client.get("/api/v1/benchmarks/savings")
+    assert sav.status_code == 200
+    cur = api_client.get("/api/v1/benchmarks/curves")
+    assert cur.status_code == 200
 

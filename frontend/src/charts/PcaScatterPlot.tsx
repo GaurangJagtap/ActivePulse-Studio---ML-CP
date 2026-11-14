@@ -13,20 +13,20 @@ const CATEGORY_STYLE: Record<
   { color: string; size: number; opacity: number; symbol: string }
 > = {
   "Unlabeled Pool": {
-    color: "#94A3B8",
+    color: "#8D9DB8",
     size: 7,
     opacity: 0.45,
     symbol: "circle",
   },
   "Already Labeled": {
-    color: "#16A34A",
-    size: 8,
-    opacity: 0.85,
+    color: "#159C91",
+    size: 8.5,
+    opacity: 0.88,
     symbol: "circle",
   },
   "Newly Queried by Active Learning": {
-    color: "#2563EB",
-    size: 11,
+    color: "#4568D9",
+    size: 11.5,
     opacity: 1.0,
     symbol: "diamond",
   },
@@ -35,7 +35,7 @@ const CATEGORY_STYLE: Record<
 export function PcaScatterPlot({
   points,
   explainedVariance = [0, 0],
-  height = 340,
+  height = 420,
 }: PcaScatterPlotProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,25 +88,25 @@ export function PcaScatterPlot({
       {
         height,
         margin: { l: 48, r: 16, t: 12, b: 64 },
-        paper_bgcolor: "#FFFFFF",
-        plot_bgcolor: "#F8FAFC",
-        font: { family: "Inter, sans-serif", size: 12, color: "#172033" },
+        paper_bgcolor: "rgba(243, 245, 253, 0)",
+        plot_bgcolor: "#EEF1FB",
+        font: { family: "Inter, sans-serif", size: 12, color: "#263452" },
         xaxis: {
           title: `PC1 (${pc1Var}% var)`,
-          gridcolor: "#E2E8F0",
-          zerolinecolor: "#CBD5E1",
+          gridcolor: "#D5DDF2",
+          zerolinecolor: "#BFCBEF",
         },
         yaxis: {
           title: `PC2 (${pc2Var}% var)`,
-          gridcolor: "#E2E8F0",
-          zerolinecolor: "#CBD5E1",
+          gridcolor: "#D5DDF2",
+          zerolinecolor: "#BFCBEF",
         },
         legend: {
           orientation: "h",
           y: -0.22,
           x: 0.5,
           xanchor: "center",
-          font: { size: 11 },
+          font: { size: 11, color: "#263452" },
         },
         hovermode: "closest",
       },
@@ -124,7 +124,7 @@ export function PcaScatterPlot({
 
   if (!points.length) {
     return (
-      <div className="flex h-[320px] items-center justify-center rounded-lg border border-dashed border-[#E2E8F0] bg-[#F8FAFC] text-xs text-[#64748B]">
+      <div className="flex h-[360px] items-center justify-center rounded-xl border border-dashed border-[#C7D3F0] bg-[#EEF1FB]/80 text-xs text-[#64748B]">
         2D PCA latent embedding coordinates will render once a model round finishes training.
       </div>
     );

@@ -34,3 +34,7 @@ frontend/dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# MLflow local runs
+mlruns/
+

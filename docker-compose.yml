@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: activepulse-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-activepulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-activepulse_dev_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-activepulse}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-activepulse} -d ${POSTGRES_DB:-activepulse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.19.0
+    container_name: activepulse-mlflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    container_name: activepulse-label-studio
+    ports:
+      - "8080:8080"
+    environment:
+      LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED: "true"
+      LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT: /label-studio/files
+    volumes:
+      - label_studio_data:/label-studio/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: activepulse-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-activepulse}:${POSTGRES_PASSWORD:-activepulse_dev_pass}@postgres:5432/${POSTGRES_DB:-activepulse}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: ${MLFLOW_EXPERIMENT_NAME:-ActivePulse-Studio}
+      MLFLOW_ENABLED: ${MLFLOW_ENABLED:-true}
+      LABEL_STUDIO_URL: ${LABEL_STUDIO_URL:-http://label-studio:8080}
+      LABEL_STUDIO_API_KEY: ${LABEL_STUDIO_API_KEY:-}
+      LABEL_STUDIO_WEBHOOK_SECRET: ${LABEL_STUDIO_WEBHOOK_SECRET:-}
+      ACTIVEPULSE_DEVICE: ${ACTIVEPULSE_DEVICE:-cpu}
+      ACTIVEPULSE_CORS_ORIGINS: ${ACTIVEPULSE_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    volumes:
+      - activepulse_data:/app/.activepulse_data
+      - results_data:/app/results
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  mlflow_data:
+  label_studio_data:
+  activepulse_data:
+  results_data:
+

@@ -135,10 +135,18 @@ npm run build
 - FastAPI REST API (`backend/api/`) with background experiment & benchmark execution, progress polling, PCA embedding extraction, blind HITL annotation queue, and CSV exports.
 - Modern 6-section React + TypeScript + Tailwind UI (`frontend/`): Overview Dashboard, Dataset Explorer, Active Learning Lab (with interactive Plotly 2D PCA & Recharts learning curves), Annotation Studio (with hidden ground truth before submission), Benchmark Arena, and Experiment History.
 
-### Pending (Phases 3–5 Roadmap)
-- **External Label Studio SDK sync** and automated task export/import (webhook endpoint `/api/v1/webhooks/label-studio` is scaffolded and ready).
-- **Cohen's Kappa** inter-annotator agreement QA (10%–15% overlap double-annotation).
-- **Custom dataset upload** (currently CIFAR-10 and AG News adapters are supported; AG News uses 64-d dense embeddings rather than raw text).
-- **MLflow** experiment tracking server and **Docker Compose** multi-container deployment.
-- **Full 5-seed real-dataset benchmark** report across all strategies.
+### Implemented in Phases 3–5
+- **Phase 3 – Real Human-in-the-Loop & QA:**
+  - Label Studio SDK integration (`src/labeling/label_studio.py`) with automatic project creation, image & text XML templates, model pre-annotations, task upload, and bidirectional sync.
+  - Webhook endpoint (`/api/v1/webhooks/label-studio`) with HMAC/secret signature verification, duplicate event idempotency, and batch-completion auto-retrain triggers.
+  - Double-annotation quality control (`src/labeling/quality.py`) with 10% overlap cohort, Cohen's Kappa inter-annotator agreement (strictly between independent human annotators), and per-annotator/per-class disagreement tracking.
+- **Phase 4 – Production Backend & Deployment:**
+  - Production FastAPI endpoints for HITL task creation, sync, quality metrics, experiment pause/resume, checkpoint restoration (`round_{k}.pt`), and job tracking.
+  - MLflow experiment tracking (`src/tracking/mlflow_tracker.py`) with run metadata, metric logging, and model artifact versioning.
+  - PostgreSQL / SQLite dual-engine persistence with Alembic database migrations (`migrations/`) and `scripts/init_db.py`.
+  - Production Docker stack (`Dockerfile`, `docker-compose.yml`, `.env.example`, `DEPLOYMENT.md`) hosting backend, frontend, PostgreSQL, and Label Studio.
+- **Phase 5 – Statistical Benchmarking & Deliverables:**
+  - Multi-seed benchmark runner (`scripts/run_benchmark.py`) evaluating 8 query strategies across paired seeds (`42..46`) on CIFAR-10 and AG News.
+  - Paired t-tests, Wilcoxon signed-rank tests, 95% confidence intervals, and unequal-length curve alignment (`src/eval/statistics.py`).
+  - Configurable cost-savings model with truthful `"Not Reached"` handling and publication-ready artifacts (learning curves, label efficiency charts, calibration curves, confusion matrices, and markdown/CSV reports under `results/`).
 

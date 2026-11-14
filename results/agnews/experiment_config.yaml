@@ -1,0 +1,28 @@
+dataset: agnews
+data_source_type: synthetic
+strategies:
+- random
+- least_confidence
+- margin
+- entropy
+- bald
+- coreset
+- badge
+- hybrid
+seeds:
+- 42
+- 43
+- 44
+- 45
+- 46
+max_samples: 450
+initial_size: 30
+batch_size: 15
+rounds: 5
+epochs: 5
+lr: 0.01
+target_accuracy: 0.6
+label_budget: 105
+device: cpu
+cost_per_hour_usd: 25.0
+seconds_per_annotation: 8.0

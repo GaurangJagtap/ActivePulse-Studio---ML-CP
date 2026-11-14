@@ -16,14 +16,14 @@ export function Progress({
   return (
     <div
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-[#E2E8F0]",
+        "relative h-2.5 w-full overflow-hidden rounded-full bg-[#DCE5FF]",
         className
       )}
       {...props}
     >
       <div
         className={cn(
-          "h-full rounded-full bg-[#2563EB] transition-all duration-300",
+          "h-full rounded-full bg-[#4568D9] transition-all duration-300",
           indicatorClassName
         )}
         style={{ width: `${clamped}%` }}
@@ -31,4 +31,3 @@ export function Progress({
     </div>
   );
 }
-

@@ -73,15 +73,67 @@ export function OverviewDashboardPage({
 
   return (
     <div className="space-y-6">
-      {/* Top Action Banner when no experiment exists yet */}
-      {!summary && (
-        <Card className="border-[#BFDBFE] bg-[#EFF6FF]">
+      {/* Active Experiment Status Highlight / Onboarding Banner */}
+      {summary ? (
+        <Card tone="blue">
+          <CardContent className="flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#4568D9]">
+                  Active Experiment
+                </span>
+                <StatusBadge status={summary.status} />
+                <span className="font-mono text-xs text-[#64748B]">
+                  {summary.id}
+                </span>
+              </div>
+              <h2 className="text-base font-semibold text-[#263452]">
+                {summary.name}
+              </h2>
+              <p className="text-xs text-[#64748B]">
+                Model{" "}
+                <span className="font-mono font-medium text-[#263452]">
+                  {summary.model_type}
+                </span>{" "}
+                · Strategy{" "}
+                <span className="font-mono font-medium text-[#4568D9]">
+                  {summary.strategy}
+                </span>{" "}
+                · Dataset{" "}
+                <span className="font-mono font-medium uppercase text-[#263452]">
+                  {summary.dataset}
+                </span>
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {summary.status === "awaiting_annotations" && (
+                <Button
+                  size="sm"
+                  variant="teal"
+                  onClick={() => onNavigate("annotation")}
+                >
+                  Open Label Queue ({summary.n_queued})
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onNavigate("lab")}
+              >
+                Inspect in AL Lab
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card tone="blue">
           <CardContent className="flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-sm font-semibold text-[#172033]">
+              <h2 className="text-sm font-semibold text-[#263452]">
                 No Active Learning runs recorded yet
               </h2>
-              <p className="mt-1 text-xs text-[#475569]">
+              <p className="mt-1 text-xs text-[#64748B]">
                 Launch an experiment in the Active Learning Lab to train a PyTorch model, evaluate holdout accuracy, and compute real label-cost savings.
               </p>
             </div>
@@ -106,6 +158,7 @@ export function OverviewDashboardPage({
           }
           icon={Target}
           accent="blue"
+          tone="default"
         />
         <MetricCard
           title="Labeled vs Unlabeled"
@@ -117,6 +170,7 @@ export function OverviewDashboardPage({
           }
           icon={Database}
           accent="teal"
+          tone="mint"
         />
         <MetricCard
           title="Current AL Round"
@@ -129,7 +183,8 @@ export function OverviewDashboardPage({
               : "Active learning iteration"
           }
           icon={Layers}
-          accent="slate"
+          accent="lavender"
+          tone="lavender"
         />
         <MetricCard
           title="Est. Cost Reduction"
@@ -141,6 +196,7 @@ export function OverviewDashboardPage({
           }
           icon={Coins}
           accent="green"
+          tone="secondary"
         />
       </div>
 
@@ -169,11 +225,11 @@ export function OverviewDashboardPage({
           />
         </div>
 
-        <Card>
+        <Card tone="lavender">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between text-sm">
               <span>Annotation Budget Utilization</span>
-              <span className="font-mono text-xs text-[#2563EB]">
+              <span className="font-mono text-xs text-[#4568D9]">
                 {budgetPct.toFixed(1)}%
               </span>
             </CardTitle>
@@ -188,7 +244,7 @@ export function OverviewDashboardPage({
             <div className="flex items-center justify-between text-xs text-[#64748B]">
               <span>
                 Dataset labeled:{" "}
-                <strong className="font-mono text-[#172033]">
+                <strong className="font-mono text-[#263452]">
                   {savings ? `${savings.pct_dataset_labeled}%` : "—"}
                 </strong>
               </span>
@@ -217,20 +273,20 @@ export function OverviewDashboardPage({
               </CardDescription>
             </div>
             {summary && (
-              <span className="rounded-md bg-[#F1F5F9] px-2.5 py-1 font-mono text-xs text-[#475569]">
+              <span className="rounded-lg bg-[#DCE5FF] px-2.5 py-1 font-mono text-xs font-medium text-[#4568D9]">
                 {summary.model_type}
               </span>
             )}
           </CardHeader>
           <CardContent>
-            <LearningCurveChart rounds={rounds} height={310} />
+            <LearningCurveChart rounds={rounds} height={360} />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card tone="mint">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-[#0D9488]" />
+              <Activity className="h-4 w-4 text-[#159C91]" />
               <span>Active Run Telemetry</span>
             </CardTitle>
             <CardDescription>
@@ -240,44 +296,44 @@ export function OverviewDashboardPage({
           <CardContent className="space-y-3">
             {latestRound ? (
               <div className="space-y-2.5 text-sm">
-                <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
                   <span className="text-[#64748B]">Strategy</span>
-                  <span className="font-mono font-medium text-[#172033]">
+                  <span className="font-mono font-medium text-[#263452]">
                     {latestRound.strategy}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
                   <span className="text-[#64748B]">Holdout Accuracy</span>
-                  <span className="font-mono font-semibold text-[#2563EB]">
+                  <span className="font-mono font-semibold text-[#4568D9]">
                     {formatPct(latestRound.test_acc)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
                   <span className="text-[#64748B]">Macro-F1 Score</span>
-                  <span className="font-mono font-medium text-[#0D9488]">
+                  <span className="font-mono font-medium text-[#159C91]">
                     {formatPct(latestRound.test_f1)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
                   <span className="text-[#64748B]">Calibration Error (ECE)</span>
-                  <span className="font-mono font-medium">
+                  <span className="font-mono font-medium text-[#263452]">
                     {formatNum(latestRound.ece)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#64748B]">Learned Temperature (T)</span>
-                  <span className="font-mono font-medium">
+                  <span className="font-mono font-medium text-[#263452]">
                     {formatNum(latestRound.temperature, 2)}
                   </span>
                 </div>
                 {savings && (
-                  <p className="rounded-lg bg-[#F8FAFC] p-2.5 text-[11px] text-[#64748B]">
+                  <p className="rounded-xl bg-[#F3F5FD]/85 p-3 text-[11px] leading-relaxed text-[#64748B]">
                     {savings.methodology_note}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-[#64748B]">
+              <div className="py-10 text-center text-xs text-[#64748B]">
                 Start a simulation or human-in-the-loop run to populate round telemetry.
               </div>
             )}
@@ -286,7 +342,7 @@ export function OverviewDashboardPage({
       </div>
 
       {/* Recent Experiment Activity */}
-      <Card>
+      <Card tone="secondary">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Recent Experiment Activity</CardTitle>
@@ -301,7 +357,7 @@ export function OverviewDashboardPage({
         <CardContent>
           {experiments.length === 0 ? (
             <div className="flex items-center justify-center gap-2 py-8 text-xs text-[#64748B]">
-              <CheckCircle2 className="h-4 w-4 text-[#94A3B8]" />
+              <CheckCircle2 className="h-4 w-4 text-[#718BE0]" />
               <span>No experiments yet. Click "Active Learning Lab" to run your first loop.</span>
             </div>
           ) : (
@@ -345,7 +401,7 @@ export function OverviewDashboardPage({
                     <TableCell className="font-mono text-xs">
                       {exp.current_round}/{exp.max_rounds}
                     </TableCell>
-                    <TableCell className="font-mono text-xs font-semibold text-[#2563EB]">
+                    <TableCell className="font-mono text-xs font-semibold text-[#4568D9]">
                       {formatPct(exp.latest_accuracy)}
                     </TableCell>
                     <TableCell>

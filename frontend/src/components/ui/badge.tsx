@@ -7,12 +7,13 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-[#BFDBFE] bg-[#EFF6FF] text-[#1D4ED8]",
-        teal: "border-[#99F6E4] bg-[#F0FDFA] text-[#0F766E]",
-        success: "border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]",
-        warning: "border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]",
-        danger: "border-[#FECACA] bg-[#FEF2F2] text-[#B91C1C]",
-        neutral: "border-[#E2E8F0] bg-[#F8FAFC] text-[#475569]",
+        default: "border-[#B8C9F8] bg-[#DCE5FF] text-[#2F4EB8]",
+        lavender: "border-[#D2C1F5] bg-[#EAE1FA] text-[#55389B]",
+        teal: "border-[#A9DFD4] bg-[#D9F0EA] text-[#0E746C]",
+        success: "border-[#A9DFD4] bg-[#D9F0EA] text-[#0E746C]",
+        warning: "border-[#F3D8A1] bg-[#FDF3DB] text-[#9A5B13]",
+        danger: "border-[#F5BDBD] bg-[#FDECEC] text-[#B42318]",
+        neutral: "border-[#D5DDF2] bg-[#EEF1FB] text-[#475569]",
       },
     },
     defaultVariants: {
@@ -28,4 +29,3 @@ export interface BadgeProps
 export function Badge({ className, variant, ...props }: BadgeProps) {
   return <span className={cn(badgeVariants({ variant, className }))} {...props} />;
 }
-

@@ -211,7 +211,7 @@ export function AnnotationStudioPage({
   return (
     <div className="space-y-6">
       {/* Top Selector & Quick HITL Starter */}
-      <Card>
+      <Card tone="secondary">
         <CardContent className="flex flex-col justify-between gap-4 p-5 lg:flex-row lg:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-72">
@@ -277,9 +277,9 @@ export function AnnotationStudioPage({
       {error && <ErrorBanner message={error} />}
 
       {/* Blind Annotation Guarantee Banner */}
-      <div className="flex items-center justify-between rounded-xl border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 text-xs text-[#1E40AF]">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#AEBEFB] bg-[#DCE5FF]/70 px-4 py-3 text-xs text-[#263452]">
         <div className="flex items-center gap-2">
-          <EyeOff className="h-4 w-4 shrink-0" />
+          <EyeOff className="h-4 w-4 shrink-0 text-[#4568D9]" />
           <span>
             <strong>Blind Annotation Mode:</strong> Ground-truth labels are strictly excluded from the pending annotation API response until after submission.
           </span>
@@ -293,36 +293,36 @@ export function AnnotationStudioPage({
 
       {/* Progress & Counters */}
       {pending && (
-        <Card>
+        <Card tone="blue">
           <CardContent className="grid grid-cols-1 items-center gap-4 p-5 md:grid-cols-4">
             <div>
-              <p className="text-xs text-[#64748B]">Pending in Queue</p>
-              <p className="font-mono text-2xl font-semibold text-[#2563EB]">
+              <p className="text-xs font-medium text-[#64748B]">Pending in Queue</p>
+              <p className="font-mono text-2xl font-semibold text-[#4568D9]">
                 {pending.pending_count}
               </p>
             </div>
             <div>
-              <p className="text-xs text-[#64748B]">Human Labels Submitted</p>
-              <p className="font-mono text-2xl font-semibold text-[#16A34A]">
+              <p className="text-xs font-medium text-[#64748B]">Human Labels Submitted</p>
+              <p className="font-mono text-2xl font-semibold text-[#159C91]">
                 {pending.completed_human_count}
               </p>
             </div>
             <div>
-              <p className="text-xs text-[#64748B]">Total Labeled (Incl. Seed)</p>
-              <p className="font-mono text-2xl font-semibold text-[#172033]">
+              <p className="text-xs font-medium text-[#64748B]">Total Labeled (Incl. Seed)</p>
+              <p className="font-mono text-2xl font-semibold text-[#263452]">
                 {pending.total_labeled_count}
               </p>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-[#64748B]">Human Batch Progress</span>
-                <span className="font-mono font-medium">
+                <span className="font-medium text-[#64748B]">Human Batch Progress</span>
+                <span className="font-mono font-semibold text-[#263452]">
                   {progressPct.toFixed(0)}%
                 </span>
               </div>
               <Progress
                 value={progressPct}
-                indicatorClassName="bg-[#0D9488]"
+                indicatorClassName="bg-[#159C91]"
               />
             </div>
           </CardContent>
@@ -334,22 +334,25 @@ export function AnnotationStudioPage({
         <LoadingState label="Loading queued samples..." />
       ) : activeSample ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left: Sample Viewer & Uncertainty Info */}
-          <Card className="lg:col-span-5">
-            <CardHeader className="flex flex-row items-center justify-between">
+          {/* Left: Primary Focus Sample Viewer */}
+          <Card tone="default" className="flex flex-col lg:col-span-6">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#D5DDF2] pb-4">
               <div>
-                <CardTitle className="font-mono text-sm">
-                  {activeSample.sample_id}
-                </CardTitle>
-                <CardDescription>
-                  Sample {sampleIndex + 1} of {samples.length} · Round{" "}
-                  {activeSample.round_num}
+                <div className="flex items-center gap-2">
+                  <CardTitle className="font-mono text-sm">
+                    {activeSample.sample_id}
+                  </CardTitle>
+                  <Badge variant="default">Round {activeSample.round_num}</Badge>
+                </div>
+                <CardDescription className="mt-1">
+                  Sample <span className="font-mono font-semibold text-[#263452]">{sampleIndex + 1}</span> of{" "}
+                  <span className="font-mono">{samples.length}</span> queued for review
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   disabled={sampleIndex === 0}
                   onClick={() => {
                     setSampleIndex((i) => Math.max(0, i - 1));
@@ -357,48 +360,50 @@ export function AnnotationStudioPage({
                   }}
                 >
                   <ChevronLeft className="h-4 w-4" />
+                  Prev
                 </Button>
                 <Button
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   disabled={sampleIndex >= samples.length - 1}
                   onClick={() => {
                     setSampleIndex((i) => Math.min(samples.length - 1, i + 1));
                     setSelectedLabelId(null);
                   }}
                 >
+                  Next
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-1 flex-col justify-center p-6">
               {activeSample.modality === "image" && activeSample.image_base64 ? (
-                <div className="flex h-60 items-center justify-center rounded-xl border border-[#E2E8F0] bg-[#F8FAFC]">
+                <div className="flex h-80 items-center justify-center rounded-2xl border border-[#C7D3F0] bg-[#E9EDFA] p-6">
                   <img
                     src={activeSample.image_base64}
                     alt={activeSample.sample_id}
-                    className="h-44 w-44 rounded-lg object-contain shadow-sm"
+                    className="h-60 w-60 rounded-xl object-contain shadow-sm"
                     style={{ imageRendering: "pixelated" }}
                   />
                 </div>
               ) : (
-                <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                <div className="space-y-4 rounded-2xl border border-[#C7D3F0] bg-[#E9EDFA] p-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#172033]">
+                    <span className="text-sm font-semibold text-[#263452]">
                       AG News 64-d Text Embedding Vector
                     </span>
-                    <Badge variant="neutral">Embedding Representation</Badge>
+                    <Badge variant="lavender">Embedding Representation</Badge>
                   </div>
-                  <p className="text-xs text-[#64748B]">
+                  <p className="text-xs leading-relaxed text-[#64748B]">
                     Current backend adapter represents news items as 64-dimensional normalized feature vectors rather than raw text strings.
                   </p>
                   {activeSample.feature_summary && (
-                    <div className="grid grid-cols-2 gap-2 rounded-lg border border-[#E2E8F0] bg-white p-3 font-mono text-xs">
+                    <div className="grid grid-cols-2 gap-3 rounded-xl border border-[#D5DDF2] bg-[#F3F5FD] p-4 font-mono text-xs">
                       {Object.entries(activeSample.feature_summary).map(
                         ([k, v]) => (
                           <div key={k} className="flex justify-between">
                             <span className="text-[#64748B]">{k}:</span>
-                            <span className="font-medium text-[#172033]">{v}</span>
+                            <span className="font-semibold text-[#263452]">{v}</span>
                           </div>
                         )
                       )}
@@ -406,58 +411,73 @@ export function AnnotationStudioPage({
                   )}
                 </div>
               )}
-
-              <div className="grid grid-cols-3 gap-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-center">
-                <div>
-                  <div className="text-[11px] text-[#64748B]">Model Guess</div>
-                  <div className="mt-0.5 text-xs font-semibold text-[#2563EB]">
-                    {activeSample.predicted_class_name || "—"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-[#64748B]">Confidence</div>
-                  <div className="mt-0.5 font-mono text-xs font-semibold text-[#172033]">
-                    {formatPct(activeSample.confidence)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-[#64748B]">Uncertainty</div>
-                  <div className="mt-0.5 font-mono text-xs font-semibold text-[#B45309]">
-                    {formatNum(activeSample.uncertainty)}
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
-          {/* Right: Class Probability Distribution + Label Selector */}
-          <Card className="lg:col-span-7">
-            <CardHeader>
-              <CardTitle>Assign Label</CardTitle>
-              <CardDescription>
-                Inspect model probability distribution and select the true category
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {activeSample.probabilities && (
-                <div>
-                  <p className="mb-1 text-xs font-medium text-[#64748B]">
-                    Calibrated Model Class Probabilities
-                  </p>
-                  <ClassProbabilityChart
-                    classNames={activeSample.class_names}
-                    probabilities={activeSample.probabilities}
-                    predictedClassName={activeSample.predicted_class_name}
-                    height={210}
-                  />
+          {/* Right Column: Separated Predictions/Confidence Card & Annotation Controls Card */}
+          <div className="space-y-6 lg:col-span-6">
+            {/* 1. Model Predictions & Confidence Card */}
+            <Card tone="lavender">
+              <CardHeader className="pb-3">
+                <CardTitle>Model Prediction & Uncertainty</CardTitle>
+                <CardDescription>
+                  Auxiliary calibrated signals (ground truth remains hidden prior to submission)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3 rounded-xl border border-[#D4C3F5] bg-[#F3F5FD]/90 p-3 text-center">
+                  <div>
+                    <div className="text-[11px] font-medium text-[#64748B]">
+                      Model Guess
+                    </div>
+                    <div className="mt-0.5 text-xs font-semibold text-[#4568D9]">
+                      {activeSample.predicted_class_name || "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-[#64748B]">
+                      Confidence
+                    </div>
+                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#263452]">
+                      {formatPct(activeSample.confidence)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-medium text-[#64748B]">
+                      Uncertainty
+                    </div>
+                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#B45309]">
+                      {formatNum(activeSample.uncertainty)}
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              <div>
-                <p className="mb-2 text-xs font-medium text-[#64748B]">
-                  Select Category Label
-                </p>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                {activeSample.probabilities && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-[#64748B]">
+                      Calibrated Class Probabilities
+                    </p>
+                    <ClassProbabilityChart
+                      classNames={activeSample.class_names}
+                      probabilities={activeSample.probabilities}
+                      predictedClassName={activeSample.predicted_class_name}
+                      height={195}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 2. Human Annotation Controls Card */}
+            <Card tone="mint">
+              <CardHeader className="pb-3">
+                <CardTitle>Annotation Controls</CardTitle>
+                <CardDescription>
+                  Select the verified category label to record into SQLite
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5">
                   {activeSample.class_names.map((clsName, idx) => {
                     const isSelected = selectedLabelId === idx;
                     const isPred = activeSample.predicted_class_id === idx;
@@ -466,60 +486,60 @@ export function AnnotationStudioPage({
                         key={clsName}
                         type="button"
                         onClick={() => setSelectedLabelId(idx)}
-                        className={`flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-all ${
+                        className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition-all ${
                           isSelected
-                            ? "border-[#2563EB] bg-[#EFF6FF] ring-2 ring-[#2563EB]/20"
-                            : "border-[#E2E8F0] bg-white hover:border-[#94A3B8]"
+                            ? "border-[#4568D9] bg-[#DCE5FF] ring-2 ring-[#4568D9]/25"
+                            : "border-[#BDE4DA] bg-[#F3F5FD] hover:border-[#718BE0]"
                         }`}
                       >
                         <span className="font-mono text-[10px] text-[#64748B]">
                           Class {idx}
                         </span>
-                        <span className="text-xs font-semibold text-[#172033]">
+                        <span className="text-xs font-semibold text-[#263452]">
                           {clsName}
                         </span>
                         {isPred && (
-                          <span className="mt-1 text-[10px] font-medium text-[#2563EB]">
-                            Model suggestion
+                          <span className="mt-1 text-[10px] font-medium text-[#4568D9]">
+                            Suggested
                           </span>
                         )}
                       </button>
                     );
                   })}
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between border-t border-[#E2E8F0] pt-4">
-                <div className="text-xs text-[#64748B]">
-                  {selectedLabelId !== null ? (
-                    <span>
-                      Selected:{" "}
-                      <strong className="text-[#172033]">
-                        {activeSample.class_names[selectedLabelId]}
-                      </strong>
-                    </span>
-                  ) : (
-                    "Click a category above to annotate this sample."
-                  )}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#BDE4DA] pt-4">
+                  <div className="text-xs text-[#64748B]">
+                    {selectedLabelId !== null ? (
+                      <span>
+                        Selected Label:{" "}
+                        <strong className="font-semibold text-[#263452]">
+                          {activeSample.class_names[selectedLabelId]}
+                        </strong>
+                      </span>
+                    ) : (
+                      "Click a category above to annotate this sample."
+                    )}
+                  </div>
+                  <Button
+                    variant="teal"
+                    disabled={selectedLabelId === null || submitting}
+                    onClick={handleSubmitLabel}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {submitting ? "Saving to SQLite..." : "Submit Annotation"}
+                  </Button>
                 </div>
-                <Button
-                  variant="teal"
-                  disabled={selectedLabelId === null || submitting}
-                  onClick={handleSubmitLabel}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  {submitting ? "Saving to SQLite..." : "Submit Annotation"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       ) : (
-        <Card>
+        <Card tone="mint">
           <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-            <CheckCircle2 className="h-8 w-8 text-[#16A34A]" />
+            <CheckCircle2 className="h-8 w-8 text-[#159C91]" />
             <div>
-              <h3 className="text-sm font-semibold text-[#172033]">
+              <h3 className="text-sm font-semibold text-[#263452]">
                 {currentExp?.mode === "human_in_the_loop"
                   ? currentExp.status === "completed"
                     ? "Human-in-the-Loop Experiment Completed"
@@ -555,10 +575,10 @@ export function AnnotationStudioPage({
 
       {/* Label Studio Phase 3 Readiness + Annotation History */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card>
+        <Card tone="secondary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Webhook className="h-4 w-4 text-[#0D9488]" />
+              <Webhook className="h-4 w-4 text-[#159C91]" />
               <span>Label Studio Integration</span>
             </CardTitle>
             <CardDescription>
@@ -574,7 +594,7 @@ export function AnnotationStudioPage({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[#64748B]">Webhook Route</span>
-              <code className="rounded bg-[#F1F5F9] px-1.5 py-0.5 text-[11px]">
+              <code className="rounded-md bg-[#DCE5FF] px-2 py-0.5 font-mono text-[11px] text-[#263452]">
                 {lsStatus?.webhook_endpoint || "/api/v1/webhooks/label-studio"}
               </code>
             </div>

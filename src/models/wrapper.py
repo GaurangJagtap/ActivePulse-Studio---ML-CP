@@ -1,12 +1,26 @@
 """Skorch wrapper integrating PyTorch models with modAL and Active Learning."""
 
 from typing import Optional, Union, List, Tuple
+import os
+import random
 import numpy as np
 import torch
 import torch.nn as nn
 from skorch import NeuralNetClassifier
 from skorch.dataset import ValidSplit
 from src.models.calibration import TemperatureScaler, compute_ece
+
+
+def seed_everything(seed: int) -> None:
+    """Set Python, NumPy, and PyTorch/CUDA RNG seeds for reproducible runs."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+        if hasattr(torch.backends, "cudnn"):
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
 
 
 class ActiveLearningClassifier(NeuralNetClassifier):
@@ -161,3 +175,33 @@ class ActiveLearningClassifier(NeuralNetClassifier):
         # Fallback to standard softmax
         exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
         return exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+
+    def save_checkpoint(self, path: str) -> None:
+        """Persist PyTorch module weights and calibration state for checkpoint resumption."""
+        if not self.initialized_:
+            raise RuntimeError("Cannot save checkpoint before model initialization.")
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        payload = {
+            "module_state_dict": {
+                k: v.detach().cpu() for k, v in self.module_.state_dict().items()
+            },
+            "temperature": float(self.current_temperature),
+            "is_calibrated": bool(self.is_calibrated),
+        }
+        torch.save(payload, path)
+
+    def load_checkpoint(self, path: str) -> bool:
+        """Restore PyTorch module weights and temperature scaling from disk."""
+        if not os.path.exists(path):
+            return False
+        if not self.initialized_:
+            self.initialize()
+        payload = torch.load(path, map_location=self.device, weights_only=True)
+        self.module_.load_state_dict(payload["module_state_dict"])
+        self.module_.to(self.device)
+        temp = float(payload.get("temperature", 1.0))
+        self.current_temperature = temp
+        self.is_calibrated = bool(payload.get("is_calibrated", False))
+        self.temperature_scaler.temperature = temp
+        self.module_.eval()
+        return True

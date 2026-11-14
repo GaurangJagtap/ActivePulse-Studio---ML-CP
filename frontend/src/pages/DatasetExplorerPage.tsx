@@ -102,7 +102,7 @@ export function DatasetExplorerPage({
   return (
     <div className="space-y-6">
       {/* Filter Controls */}
-      <Card>
+      <Card tone="secondary">
         <CardContent className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-[#64748B]">
@@ -212,6 +212,7 @@ export function DatasetExplorerPage({
                 subtitle={`Tensor shape: [${stats.feature_shape.join(" × ")}]`}
                 icon={Database}
                 accent="blue"
+                tone="default"
               />
               <MetricCard
                 title="Unlabeled Pool"
@@ -219,6 +220,7 @@ export function DatasetExplorerPage({
                 subtitle={`${stats.split_stats.n_labeled} labeled · ${stats.split_stats.n_queued} queued`}
                 icon={Layers}
                 accent="teal"
+                tone="mint"
               />
               <MetricCard
                 title="Zero-Leakage Holdout Test"
@@ -226,6 +228,7 @@ export function DatasetExplorerPage({
                 subtitle={`${stats.split_stats.n_val} validation calibration samples`}
                 icon={ShieldCheck}
                 accent="green"
+                tone="lavender"
               />
               <MetricCard
                 title="Target Classes"
@@ -233,6 +236,7 @@ export function DatasetExplorerPage({
                 subtitle={stats.modality === "image" ? "RGB 32×32 Images" : "64-d Text Embeddings"}
                 icon={Database}
                 accent="slate"
+                tone="secondary"
               />
             </div>
 
@@ -246,11 +250,11 @@ export function DatasetExplorerPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ClassDistributionChart data={stats.class_distribution} height={280} />
+                  <ClassDistributionChart data={stats.class_distribution} height={310} />
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="lavender">
                 <CardHeader>
                   <CardTitle>Dataset Adapter Metadata</CardTitle>
                   <CardDescription>
@@ -258,31 +262,33 @@ export function DatasetExplorerPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-xs">
-                  <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
                     <span className="text-[#64748B]">Adapter ID</span>
-                    <span className="font-mono font-medium">{stats.dataset_id}</span>
+                    <span className="font-mono font-medium text-[#263452]">
+                      {stats.dataset_id}
+                    </span>
                   </div>
-                  <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
                     <span className="text-[#64748B]">Modality</span>
                     <Badge variant="default">{stats.modality}</Badge>
                   </div>
-                  <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
                     <span className="text-[#64748B]">Supported Models</span>
-                    <span className="font-mono">
+                    <span className="font-mono text-[#263452]">
                       {activeMeta?.supported_models.join(", ") || "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-[#E2E8F0] pb-2">
+                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
                     <span className="text-[#64748B]">Raw Text Storage</span>
-                    <span className="font-mono">
+                    <span className="font-mono text-[#263452]">
                       {activeMeta?.supports_raw_text ? "Yes" : "64-d Embeddings Only"}
                     </span>
                   </div>
-                  <p className="text-[#64748B]">{activeMeta?.description}</p>
+                  <p className="leading-relaxed text-[#64748B]">{activeMeta?.description}</p>
 
-                  <div className="rounded-lg border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3">
-                    <div className="flex items-center gap-2 font-medium text-[#172033]">
-                      <UploadCloud className="h-4 w-4 text-[#64748B]" />
+                  <div className="rounded-xl border border-dashed border-[#C7B3EE] bg-[#F3F5FD]/85 p-3">
+                    <div className="flex items-center gap-2 font-medium text-[#263452]">
+                      <UploadCloud className="h-4 w-4 text-[#4568D9]" />
                       <span>Custom Dataset Upload</span>
                       <Badge variant="warning">Pending</Badge>
                     </div>
@@ -295,7 +301,7 @@ export function DatasetExplorerPage({
             </div>
 
             {/* Sample Preview Gallery */}
-            <Card>
+            <Card tone="secondary">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Sample Preview</CardTitle>
@@ -334,10 +340,10 @@ export function DatasetExplorerPage({
                   {samplesRes?.samples.map((s) => (
                     <div
                       key={s.sample_id}
-                      className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3"
+                      className="rounded-xl border border-[#D5DDF2] bg-[#F3F5FD] p-3.5 transition-all hover:border-[#718BE0]"
                     >
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="truncate font-mono text-[11px] font-medium text-[#172033]">
+                      <div className="mb-2.5 flex items-center justify-between gap-2">
+                        <span className="truncate font-mono text-[11px] font-medium text-[#263452]">
                           {s.sample_id}
                         </span>
                         <Badge
@@ -345,7 +351,7 @@ export function DatasetExplorerPage({
                             s.split === "test"
                               ? "warning"
                               : s.status === "labeled"
-                                ? "success"
+                                ? "teal"
                                 : "neutral"
                           }
                         >
@@ -354,7 +360,7 @@ export function DatasetExplorerPage({
                       </div>
 
                       {s.image_base64 ? (
-                        <div className="mb-2.5 flex h-28 items-center justify-center rounded-md border border-[#E2E8F0] bg-white">
+                        <div className="mb-2.5 flex h-28 items-center justify-center rounded-lg border border-[#D5DDF2] bg-[#E9EDFA]">
                           <img
                             src={s.image_base64}
                             alt={s.sample_id}
@@ -364,7 +370,7 @@ export function DatasetExplorerPage({
                         </div>
                       ) : (
                         s.feature_summary && (
-                          <div className="mb-2.5 rounded-md border border-[#E2E8F0] bg-white p-2 font-mono text-[11px] text-[#475569]">
+                          <div className="mb-2.5 rounded-lg border border-[#D5DDF2] bg-[#E9EDFA] p-2.5 font-mono text-[11px] text-[#263452]">
                             <div>L2 Norm: {s.feature_summary.l2_norm}</div>
                             <div>
                               Mean/Std: {s.feature_summary.mean} / {s.feature_summary.std}
@@ -378,7 +384,7 @@ export function DatasetExplorerPage({
 
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-[#64748B]">True Class:</span>
-                        <span className="font-medium text-[#172033]">
+                        <span className="font-semibold text-[#263452]">
                           {s.true_class_name || "—"}
                         </span>
                       </div>

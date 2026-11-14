@@ -4,7 +4,11 @@ from typing import Dict, List, Tuple, Optional, Any
 import os
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+from src.eval.statistics import align_learning_curves
 
 
 def compute_alc(labeled_counts: List[int], accuracies: List[float]) -> float:
@@ -117,24 +121,37 @@ def compute_label_savings(
                     reduction_list.append(reduction)
 
         n_seeds = len(runs)
-        mean_alc = np.mean(alc_list) if alc_list else 0.0
-        ci_alc = 1.96 * (np.std(alc_list) / np.sqrt(n_seeds)) if n_seeds > 1 else 0.0
+        mean_alc = float(np.mean(alc_list)) if alc_list else 0.0
+        std_alc = float(np.std(alc_list, ddof=1)) if len(alc_list) > 1 else 0.0
+        ci_alc = 1.96 * (std_alc / np.sqrt(len(alc_list))) if len(alc_list) > 1 else 0.0
 
-        mean_labels = np.mean(labels_needed_list) if labels_needed_list else np.nan
-        ci_labels = 1.96 * (np.std(labels_needed_list) / np.sqrt(len(labels_needed_list))) if len(labels_needed_list) > 1 else 0.0
+        mean_labels = float(np.mean(labels_needed_list)) if labels_needed_list else np.nan
+        std_labels = float(np.std(labels_needed_list, ddof=1)) if len(labels_needed_list) > 1 else 0.0
+        ci_labels = 1.96 * (std_labels / np.sqrt(len(labels_needed_list))) if len(labels_needed_list) > 1 else 0.0
 
-        mean_reduct = np.mean(reduction_list) if reduction_list else 0.0
-        ci_reduct = 1.96 * (np.std(reduction_list) / np.sqrt(len(reduction_list))) if len(reduction_list) > 1 else 0.0
+        has_reduction = bool(reduction_list and avg_baseline_labels and avg_baseline_labels > 0)
+        mean_reduct = float(np.mean(reduction_list)) if has_reduction else np.nan
+        std_reduct = float(np.std(reduction_list, ddof=1)) if len(reduction_list) > 1 else 0.0
+        ci_reduct = 1.96 * (std_reduct / np.sqrt(len(reduction_list))) if len(reduction_list) > 1 else 0.0
+
+        if strat_name == baseline_strategy:
+            reduct_str = "0.0% (Baseline)"
+        elif has_reduction:
+            reduct_str = f"{mean_reduct:+.1f}% +/- {ci_reduct:.1f}%"
+        elif np.isnan(mean_labels):
+            reduct_str = "Not Reached"
+        else:
+            reduct_str = "N/A (Random Not Reached)"
 
         rows.append({
             "Strategy": strat_name,
             "Seeds": n_seeds,
             "ALC (Mean +/- 95% CI)": f"{mean_alc:.4f} +/- {ci_alc:.4f}",
             "Labels to Target": f"{mean_labels:.1f} +/- {ci_labels:.1f}" if not np.isnan(mean_labels) else "Not Reached",
-            "% Label Reduction vs Random": f"{mean_reduct:+.1f}% +/- {ci_reduct:.1f}%" if strat_name != baseline_strategy else "0.0% (Baseline)",
+            "% Label Reduction vs Random": reduct_str,
             "_raw_alc_mean": mean_alc,
             "_raw_labels_mean": mean_labels,
-            "_raw_reduction_mean": mean_reduct,
+            "_raw_reduction_mean": 0.0 if np.isnan(mean_reduct) else mean_reduct,
         })
 
     df = pd.DataFrame(rows)
@@ -160,23 +177,13 @@ def plot_learning_curves(
 
     for idx, (strat_name, runs) in enumerate(benchmark_results.items()):
         color = colors[idx]
-        # Align all runs by round_num
-        max_len = max(len(r) for r in runs)
-        labeled_matrix = []
-        acc_matrix = []
+        labeled_matrix = [[step["n_labeled"] for step in r] for r in runs if r]
+        acc_matrix = [[step["test_acc"] for step in r] for r in runs if r]
+        if not labeled_matrix:
+            continue
 
-        for r in runs:
-            n_lbl = [step["n_labeled"] for step in r]
-            accs = [step["test_acc"] for step in r]
-            labeled_matrix.append(n_lbl)
-            acc_matrix.append(accs)
-
-        x_vals = labeled_matrix[0]
-        acc_arr = np.array(acc_matrix)  # (n_seeds, n_rounds)
-
-        mean_acc = np.mean(acc_arr, axis=0)
-        std_acc = np.std(acc_arr, axis=0)
-        n_seeds = len(runs)
+        x_vals, mean_acc, std_acc = align_learning_curves(labeled_matrix, acc_matrix)
+        n_seeds = len(labeled_matrix)
         ci_95 = 1.96 * (std_acc / np.sqrt(n_seeds)) if n_seeds > 1 else std_acc
 
         ax.plot(x_vals, mean_acc, label=strat_name, color=color, linewidth=2.2, marker="o", markersize=4)

@@ -33,11 +33,11 @@ export function PendingFeatureBanner({
   return (
     <div
       className={cn(
-        "flex items-start gap-2.5 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-xs text-[#92400E]",
+        "flex items-start gap-2.5 rounded-xl border border-[#D4C3F5] bg-[#EAE1FA]/80 px-4 py-3 text-xs text-[#4C1D95]",
         className
       )}
     >
-      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#B45309]" />
+      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#6D28D9]" />
       <div>
         <span className="font-semibold">{title}: </span>
         <span>{description}</span>
@@ -48,8 +48,8 @@ export function PendingFeatureBanner({
 
 export function LoadingState({ label = "Loading data..." }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-2.5 rounded-xl border border-[#E2E8F0] bg-white py-12 text-sm text-[#64748B]">
-      <Loader2 className="h-4 w-4 animate-spin text-[#2563EB]" />
+    <div className="flex items-center justify-center gap-2.5 rounded-2xl border border-[#D5DDF2] bg-[#F3F5FD] py-12 text-sm text-[#64748B]">
+      <Loader2 className="h-4 w-4 animate-spin text-[#4568D9]" />
       <span>{label}</span>
     </div>
   );

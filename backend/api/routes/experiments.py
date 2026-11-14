@@ -7,8 +7,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from backend.api.schemas.experiments import (
+    ExperimentCompareRequest,
+    ExperimentCompareResponse,
     ExperimentCreateRequest,
     ExperimentDetailResponse,
+    ExperimentEvaluationResponse,
+    ExperimentJobsResponse,
     ExperimentProgressResponse,
     ExperimentSummary,
     PcaEmbeddingResponse,
@@ -16,14 +20,19 @@ from backend.api.schemas.experiments import (
 )
 from backend.api.services.experiment_service import (
     advance_experiment_round,
+    compare_experiments,
     create_experiment,
     delete_experiment,
     get_experiment_detail,
+    get_experiment_evaluation,
+    get_experiment_jobs,
     get_experiment_pca,
     get_experiment_progress,
     get_experiment_selected_samples,
     list_experiments,
+    resume_experiment,
     start_experiment,
+    stop_experiment,
 )
 
 router = APIRouter(prefix="/experiments", tags=["Experiments"])
@@ -60,6 +69,24 @@ def trigger_start(experiment_id: str) -> ExperimentSummary:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@router.post("/{experiment_id}/stop", response_model=ExperimentSummary, summary="Cancel or pause an active experiment safely")
+def trigger_stop(experiment_id: str) -> ExperimentSummary:
+    try:
+        return stop_experiment(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/{experiment_id}/resume", response_model=ExperimentSummary, summary="Resume a paused, cancelled, or failed experiment from its latest checkpoint")
+def trigger_resume(experiment_id: str) -> ExperimentSummary:
+    try:
+        return resume_experiment(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.post("/{experiment_id}/advance", response_model=ExperimentSummary, summary="Retrain and advance HITL experiment round")
 def trigger_advance(experiment_id: str) -> ExperimentSummary:
     try:
@@ -74,6 +101,30 @@ def trigger_advance(experiment_id: str) -> ExperimentSummary:
 def poll_progress(experiment_id: str) -> ExperimentProgressResponse:
     try:
         return get_experiment_progress(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/{experiment_id}/jobs", response_model=ExperimentJobsResponse, summary="List background job executions and statuses for an experiment")
+def list_experiment_jobs(experiment_id: str) -> ExperimentJobsResponse:
+    try:
+        return get_experiment_jobs(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/{experiment_id}/evaluation", response_model=ExperimentEvaluationResponse, summary="Get comprehensive evaluation metrics (Accuracy, F1, ECE, NLL, ALC, Cost Savings)")
+def evaluate_experiment(experiment_id: str) -> ExperimentEvaluationResponse:
+    try:
+        return get_experiment_evaluation(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/compare", response_model=ExperimentCompareResponse, summary="Compare multiple experiments and tracked MLflow runs side by side")
+def compare_runs_endpoint(req: ExperimentCompareRequest) -> ExperimentCompareResponse:
+    try:
+        return compare_experiments(req)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

@@ -1,6 +1,6 @@
 """Pydantic schemas for Active Learning experiments, rounds, PCA, and selected samples."""
 
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -33,6 +33,8 @@ class RoundMetricSchema(BaseModel):
     test_acc: float
     test_f1: float
     ece: Optional[float] = None
+    nll: Optional[float] = None
+    train_time_sec: Optional[float] = None
     temperature: Optional[float] = None
     timestamp: Optional[str] = None
 
@@ -61,6 +63,8 @@ class ExperimentSummary(BaseModel):
         "awaiting_annotations",
         "completed",
         "failed",
+        "cancelled",
+        "paused",
     ]
     current_round: int
     max_rounds: int
@@ -143,4 +147,65 @@ class SelectedSamplesResponse(BaseModel):
     round_num: int
     strategy: str
     samples: List[SelectedSampleSchema]
+
+
+class JobStatusSchema(BaseModel):
+    job_id: str
+    experiment_id: str
+    job_type: str
+    status: str
+    progress_pct: float
+    current_stage: Optional[str] = None
+    error_message: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class ExperimentJobsResponse(BaseModel):
+    experiment_id: str
+    jobs: List[JobStatusSchema]
+
+
+class ExperimentEvaluationResponse(BaseModel):
+    experiment_id: str
+    dataset: str
+    strategy: str
+    mode: str
+    rounds_completed: int
+    latest_accuracy: Optional[float] = None
+    latest_f1: Optional[float] = None
+    latest_ece: Optional[float] = None
+    latest_nll: Optional[float] = None
+    alc: float
+    total_train_time_sec: float
+    labels_to_target: Optional[int] = None
+    target_accuracy: Optional[float] = None
+    rounds: List[RoundMetricSchema]
+    cost_savings: Optional[CostSavingsSchema] = None
+    model_version: Optional[str] = None
+
+
+class ExperimentCompareRequest(BaseModel):
+    experiment_ids: List[str] = Field(..., min_length=1, max_length=20)
+
+
+class ExperimentCompareEntry(BaseModel):
+    experiment_id: str
+    name: str
+    dataset: str
+    model_type: str
+    strategy: str
+    status: str
+    rounds_completed: int
+    n_labeled: int
+    final_accuracy: Optional[float] = None
+    final_f1: Optional[float] = None
+    final_ece: Optional[float] = None
+    final_nll: Optional[float] = None
+    alc: float
+
+
+class ExperimentCompareResponse(BaseModel):
+    experiments: List[ExperimentCompareEntry]
+    mlflow_runs: List[Dict[str, Any]] = []
 

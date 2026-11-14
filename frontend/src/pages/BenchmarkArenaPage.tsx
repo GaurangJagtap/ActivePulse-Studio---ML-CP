@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Download, Play, Trophy } from "lucide-react";
+import { Award, Download, Play, Sparkles, Trophy } from "lucide-react";
 import {
   BenchmarkAlcBarChart,
   BenchmarkCurvesChart,
 } from "@/charts/BenchmarkCharts";
 import { ErrorBanner, LoadingState } from "@/components/shared/FeedbackBanner";
+import { MetricCard } from "@/components/shared/MetricCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,16 +139,30 @@ export function BenchmarkArenaPage({
     (s) => s.id !== "cold_start_kmeans"
   );
 
+  const summaryRows = results?.summary_rows || [];
+  const bestAlcRow = summaryRows.length
+    ? summaryRows.reduce((best, r) => (r.alc_mean > best.alc_mean ? r : best), summaryRows[0])
+    : null;
+  const bestSavingsRow = summaryRows.length
+    ? summaryRows.reduce(
+        (best, r) =>
+          (r.label_reduction_pct ?? -Infinity) > (best.label_reduction_pct ?? -Infinity)
+            ? r
+            : best,
+        summaryRows[0]
+      )
+    : null;
+
   return (
     <div className="space-y-6">
       {error && <ErrorBanner message={error} />}
 
       {/* Multi-Seed Benchmark Launcher */}
-      <Card>
+      <Card tone="secondary">
         <CardHeader className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-[#2563EB]" />
+              <Trophy className="h-4 w-4 text-[#4568D9]" />
               <span>Run Multi-Seed Benchmark Suite</span>
             </CardTitle>
             <CardDescription>
@@ -157,7 +172,7 @@ export function BenchmarkArenaPage({
           <a
             href={api.getBenchmarkExportUrl()}
             download="benchmark_savings.csv"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#E2E8F0] bg-white px-3 text-xs font-medium text-[#172033] hover:bg-[#F8FAFC]"
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-[#C7D3F0] bg-[#F3F5FD] px-3 text-xs font-medium text-[#263452] transition-colors hover:bg-[#DCE5FF]/60"
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV
@@ -226,7 +241,7 @@ export function BenchmarkArenaPage({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#E2E8F0] pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#D5DDF2] pt-4">
               <div className="flex flex-wrap gap-2">
                 {benchmarkStrategies.map((s) => {
                   const active = selectedStrategies.includes(s.id);
@@ -237,8 +252,8 @@ export function BenchmarkArenaPage({
                       onClick={() => toggleStrategy(s.id)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         active
-                          ? "border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]"
-                          : "border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#94A3B8]"
+                          ? "border-[#4568D9] bg-[#DCE5FF] text-[#263452]"
+                          : "border-[#C7D3F0] bg-[#F3F5FD] text-[#64748B] hover:border-[#718BE0]"
                       }`}
                     >
                       {s.id}
@@ -265,7 +280,7 @@ export function BenchmarkArenaPage({
                   <span>
                     Executing {job.current_strategy} · seed {job.current_seed}
                   </span>
-                  <span className="font-mono">
+                  <span className="font-mono text-[#263452]">
                     {job.completed_steps} / {job.total_steps} runs
                   </span>
                 </div>
@@ -290,23 +305,67 @@ export function BenchmarkArenaPage({
       ) : (
         results && (
           <>
-            {/* Interactive Charts */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <Card>
+            {/* Strategy Performance Highlights */}
+            {bestAlcRow && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <MetricCard
+                  title="Top ALC Strategy"
+                  value={bestAlcRow.strategy}
+                  subtitle={`ALC Score: ${bestAlcRow.alc_display}`}
+                  icon={Trophy}
+                  accent="blue"
+                  tone="blue"
+                />
+                <MetricCard
+                  title="Highest Label Reduction"
+                  value={
+                    bestSavingsRow?.label_reduction_pct !== null &&
+                    bestSavingsRow?.label_reduction_pct !== undefined
+                      ? `${bestSavingsRow.label_reduction_pct}%`
+                      : "—"
+                  }
+                  subtitle={
+                    bestSavingsRow
+                      ? `Strategy: ${bestSavingsRow.strategy} · ${bestSavingsRow.labels_to_target_display} labels`
+                      : "Relative to Random baseline"
+                  }
+                  icon={Sparkles}
+                  accent="teal"
+                  tone="mint"
+                />
+                <MetricCard
+                  title="Best Final Accuracy"
+                  value={formatPct(
+                    summaryRows.reduce(
+                      (m, r) => Math.max(m, r.final_accuracy ?? 0),
+                      0
+                    )
+                  )}
+                  subtitle={`${summaryRows.length} strategies benchmarked`}
+                  icon={Award}
+                  accent="lavender"
+                  tone="lavender"
+                />
+              </div>
+            )}
+
+            {/* Prominent Accuracy vs Budget + ALC Comparison */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+              <Card className="xl:col-span-7">
                 <CardHeader>
                   <CardTitle>Accuracy vs Annotation Budget</CardTitle>
                   <CardDescription>
-                    Mean holdout accuracy across seeds (dashed = Random baseline)
+                    Mean holdout accuracy across seeds as labeled samples grow (dashed = Random baseline)
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <BenchmarkCurvesChart points={results.curve_points} />
+                  <BenchmarkCurvesChart points={results.curve_points} height={380} />
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card tone="lavender" className="xl:col-span-5">
                 <CardHeader>
-                  <CardTitle>Area Under Learning Curve & Label Reduction</CardTitle>
+                  <CardTitle>Area Under Learning Curve & Savings</CardTitle>
                   <CardDescription>
                     Source: <code className="font-mono">{results.source}</code>
                   </CardDescription>
@@ -324,7 +383,7 @@ export function BenchmarkArenaPage({
             </div>
 
             {/* Strategy Comparison Table */}
-            <Card>
+            <Card tone="secondary">
               <CardHeader>
                 <CardTitle>Strategy Efficiency & Calibration Comparison</CardTitle>
                 <CardDescription>
@@ -346,39 +405,50 @@ export function BenchmarkArenaPage({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {results.summary_rows.map((row) => (
-                      <TableRow key={row.strategy}>
-                        <TableCell className="font-mono text-xs font-semibold">
-                          {row.strategy}
-                          {row.strategy === "random" && (
-                            <Badge variant="neutral" className="ml-2">
-                              Baseline
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {row.seeds}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {row.alc_display}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {row.labels_to_target_display}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs font-medium text-[#0D9488]">
-                          {row.label_reduction_display}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {formatPct(row.final_accuracy)}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {formatPct(row.final_f1)}
-                        </TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {formatNum(row.final_ece)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {results.summary_rows.map((row) => {
+                      const isTopAlc = bestAlcRow?.strategy === row.strategy;
+                      return (
+                        <TableRow
+                          key={row.strategy}
+                          className={isTopAlc ? "bg-[#DCE5FF]/40" : undefined}
+                        >
+                          <TableCell className="font-mono text-xs font-semibold">
+                            {row.strategy}
+                            {row.strategy === "random" && (
+                              <Badge variant="neutral" className="ml-2">
+                                Baseline
+                              </Badge>
+                            )}
+                            {isTopAlc && (
+                              <Badge variant="teal" className="ml-2">
+                                Best ALC
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {row.seeds}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {row.alc_display}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {row.labels_to_target_display}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs font-semibold text-[#159C91]">
+                            {row.label_reduction_display}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs font-medium text-[#4568D9]">
+                            {formatPct(row.final_accuracy)}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {formatPct(row.final_f1)}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {formatNum(row.final_ece)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -397,7 +467,7 @@ export function BenchmarkArenaPage({
                   <img
                     src={`${api.getBenchmarkPlotUrl()}?t=${plotKey}`}
                     alt="Learning Curves with 95% CI"
-                    className="mx-auto max-h-[420px] rounded-lg border border-[#E2E8F0]"
+                    className="mx-auto max-h-[420px] rounded-xl border border-[#D5DDF2]"
                   />
                 </CardContent>
               </Card>

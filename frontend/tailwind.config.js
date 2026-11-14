@@ -4,32 +4,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#F7F8FC",
-        sidebar: "#101827",
-        card: "#FFFFFF",
+        canvas: "#E9EDFA",
+        "canvas-secondary": "#EEF1FB",
+        sidebar: "#17243A",
+        card: "#F3F5FD",
         primary: {
-          DEFAULT: "#2563EB",
+          DEFAULT: "#4568D9",
+          secondary: "#718BE0",
           foreground: "#FFFFFF",
         },
-        teal: {
-          accent: "#0D9488",
+        aurora: {
+          lavender: "#EAE1FA",
+          lightblue: "#DCE5FF",
+          mint: "#D9F0EA",
+          teal: "#159C91",
         },
-        success: "#16A34A",
         ink: {
-          primary: "#172033",
+          primary: "#263452",
           secondary: "#64748B",
         },
-        border: "#E2E8F0",
+        border: "#D5DDF2",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "Inter", "system-ui", "-apple-system", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       boxShadow: {
-        card: "0 1px 2px 0 rgba(16, 24, 39, 0.04), 0 1px 3px 0 rgba(16, 24, 39, 0.03)",
+        card: "0 1px 3px 0 rgba(23, 36, 58, 0.05), 0 4px 12px -2px rgba(69, 104, 217, 0.06)",
+        "card-hover":
+          "0 4px 12px -2px rgba(23, 36, 58, 0.08), 0 8px 20px -4px rgba(69, 104, 217, 0.1)",
       },
     },
   },
   plugins: [],
 };
-

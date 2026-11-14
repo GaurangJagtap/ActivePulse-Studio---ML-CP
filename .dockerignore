@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+frontend/node_modules/
+frontend/dist/
+.activepulse_data/
+mlruns/
+*.db
+*.sqlite
+data/
+

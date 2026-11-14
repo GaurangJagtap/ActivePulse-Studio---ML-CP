@@ -23,6 +23,17 @@ class StoppingRule:
         self._best_acc: float = -1.0
         self._plateau_counter: int = 0
 
+    def restore_from_history(self, accuracies: List[float]) -> None:
+        """Reconstruct plateau tracking state when resuming an interrupted run."""
+        self._best_acc = -1.0
+        self._plateau_counter = 0
+        for acc in accuracies:
+            if acc > self._best_acc + self.min_delta:
+                self._best_acc = float(acc)
+                self._plateau_counter = 0
+            else:
+                self._plateau_counter += 1
+
     def should_stop(
         self,
         current_round: int,

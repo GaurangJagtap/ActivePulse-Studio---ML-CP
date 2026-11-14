@@ -61,3 +61,28 @@ def get_benchmark_plot():
         raise HTTPException(status_code=404, detail="No benchmark learning curves plot generated yet.")
     return FileResponse(img_path, media_type="image/png")
 
+
+@router.get("/savings", summary="Get label-reduction and cost-savings summary table across strategies")
+def fetch_benchmark_savings() -> dict:
+    res = get_benchmark_results()
+    return {
+        "has_results": bool(res.summary_rows),
+        "source": res.source,
+        "dataset": res.dataset,
+        "target_accuracy": res.target_accuracy,
+        "seeds": res.seeds,
+        "savings": [row.model_dump() for row in res.summary_rows],
+    }
+
+
+@router.get("/curves", summary="Get mean +/- std learning curves per strategy across seeds")
+def fetch_benchmark_curves() -> dict:
+    res = get_benchmark_results()
+    return {
+        "has_results": bool(res.curve_points or res.summary_rows),
+        "source": res.source,
+        "dataset": res.dataset,
+        "seeds": res.seeds,
+        "curves": [c.model_dump() for c in res.curve_points],
+    }
+

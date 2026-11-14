@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Download, Eye, GitCompare, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Eye, GitCompare, Search, Trash2 } from "lucide-react";
 import { LearningCurveChart } from "@/charts/LearningCurveChart";
 import { ErrorBanner } from "@/components/shared/FeedbackBanner";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input, Select } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -53,6 +54,10 @@ export function ExperimentHistoryPage({
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [datasetFilter, setDatasetFilter] = useState("all");
+  const [strategyFilter, setStrategyFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     if (!selectedExperimentId) {
@@ -64,6 +69,29 @@ export function ExperimentHistoryPage({
       .then(setInspected)
       .catch(() => {});
   }, [selectedExperimentId]);
+
+  const uniqueStrategies = useMemo(
+    () => Array.from(new Set(experiments.map((e) => e.strategy))),
+    [experiments]
+  );
+
+  const filteredExperiments = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return experiments.filter((exp) => {
+      if (datasetFilter !== "all" && exp.dataset !== datasetFilter) return false;
+      if (strategyFilter !== "all" && exp.strategy !== strategyFilter) return false;
+      if (statusFilter !== "all" && exp.status !== statusFilter) return false;
+      if (
+        q &&
+        !exp.name.toLowerCase().includes(q) &&
+        !exp.id.toLowerCase().includes(q) &&
+        !exp.strategy.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [experiments, searchQuery, datasetFilter, strategyFilter, statusFilter]);
 
   function toggleCompare(id: string) {
     setCompareIds((prev) =>
@@ -92,6 +120,50 @@ export function ExperimentHistoryPage({
     <div className="space-y-6">
       {error && <ErrorBanner message={error} />}
 
+      {/* Filter Bar */}
+      <Card tone="secondary">
+        <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#64748B]" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search experiment name or ID..."
+              className="pl-9"
+            />
+          </div>
+          <Select
+            value={datasetFilter}
+            onChange={(e) => setDatasetFilter(e.target.value)}
+          >
+            <option value="all">All Datasets</option>
+            <option value="cifar10">CIFAR-10</option>
+            <option value="agnews">AG News</option>
+          </Select>
+          <Select
+            value={strategyFilter}
+            onChange={(e) => setStrategyFilter(e.target.value)}
+          >
+            <option value="all">All Strategies</option>
+            {uniqueStrategies.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </Select>
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="completed">Completed</option>
+            <option value="running">Running</option>
+            <option value="awaiting_annotations">Awaiting Annotations</option>
+            <option value="failed">Failed</option>
+          </Select>
+        </CardContent>
+      </Card>
+
       {/* Experiments Ledger */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -101,12 +173,16 @@ export function ExperimentHistoryPage({
               All Active Learning runs persisted in SQLite with full metrics and CSV exports
             </CardDescription>
           </div>
-          <Badge variant="neutral">{experiments.length} Runs Recorded</Badge>
+          <Badge variant="default" className="font-mono">
+            {filteredExperiments.length} of {experiments.length} Runs
+          </Badge>
         </CardHeader>
         <CardContent>
-          {experiments.length === 0 ? (
+          {filteredExperiments.length === 0 ? (
             <div className="py-10 text-center text-xs text-[#64748B]">
-              No experiments recorded yet. Run a simulation in the Active Learning Lab to create one.
+              {experiments.length === 0
+                ? "No experiments recorded yet. Run a simulation in the Active Learning Lab to create one."
+                : "No experiments match the active filters."}
             </div>
           ) : (
             <Table>
@@ -126,25 +202,25 @@ export function ExperimentHistoryPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {experiments.map((exp) => {
+                {filteredExperiments.map((exp) => {
                   const isSelected = exp.id === selectedExperimentId;
                   const isCompared = compareIds.includes(exp.id);
                   return (
                     <TableRow
                       key={exp.id}
-                      className={isSelected ? "bg-[#EFF6FF]/60" : undefined}
+                      className={isSelected ? "bg-[#DCE5FF]/55" : undefined}
                     >
                       <TableCell>
                         <input
                           type="checkbox"
                           checked={isCompared}
                           onChange={() => toggleCompare(exp.id)}
-                          className="h-4 w-4 rounded border-[#CBD5E1] text-[#2563EB]"
+                          className="h-4 w-4 rounded border-[#CBD5EE] text-[#4568D9]"
                           title="Select up to 4 runs to compare"
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium text-[#172033]">
+                        <div className="font-medium text-[#263452]">
                           {exp.name}
                         </div>
                         <div className="font-mono text-[11px] text-[#64748B]">
@@ -163,7 +239,7 @@ export function ExperimentHistoryPage({
                       <TableCell className="font-mono text-xs">
                         {exp.n_labeled}
                       </TableCell>
-                      <TableCell className="font-mono text-xs font-semibold text-[#2563EB]">
+                      <TableCell className="font-mono text-xs font-semibold text-[#4568D9]">
                         {formatPct(exp.latest_accuracy)}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-[#64748B]">
@@ -188,7 +264,7 @@ export function ExperimentHistoryPage({
                           <a
                             href={api.getExperimentExportUrl(exp.id)}
                             download={`${exp.id}_metrics.csv`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#172033]"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#64748B] hover:bg-[#DCE5FF]/60 hover:text-[#263452]"
                             title="Export metrics CSV"
                           >
                             <Download className="h-4 w-4" />
@@ -214,10 +290,10 @@ export function ExperimentHistoryPage({
 
       {/* Side-by-Side Comparison */}
       {comparedRuns.length >= 2 && (
-        <Card>
+        <Card tone="lavender">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <GitCompare className="h-4 w-4 text-[#0D9488]" />
+              <GitCompare className="h-4 w-4 text-[#159C91]" />
               <span>Side-by-Side Experiment Comparison ({comparedRuns.length})</span>
             </CardTitle>
           </CardHeader>
@@ -259,7 +335,7 @@ export function ExperimentHistoryPage({
                 <TableRow>
                   <TableCell className="font-medium text-[#64748B]">Holdout Accuracy</TableCell>
                   {comparedRuns.map((r) => (
-                    <TableCell key={r.id} className="font-mono text-xs font-semibold text-[#2563EB]">
+                    <TableCell key={r.id} className="font-mono text-xs font-semibold text-[#4568D9]">
                       {formatPct(r.latest_accuracy)}
                     </TableCell>
                   ))}
@@ -267,7 +343,7 @@ export function ExperimentHistoryPage({
                 <TableRow>
                   <TableCell className="font-medium text-[#64748B]">Macro-F1</TableCell>
                   {comparedRuns.map((r) => (
-                    <TableCell key={r.id} className="font-mono text-xs text-[#0D9488]">
+                    <TableCell key={r.id} className="font-mono text-xs text-[#159C91]">
                       {formatPct(r.latest_f1)}
                     </TableCell>
                   ))}
@@ -306,34 +382,34 @@ export function ExperimentHistoryPage({
               </Button>
             </CardHeader>
             <CardContent>
-              <LearningCurveChart rounds={inspected.rounds} height={280} />
+              <LearningCurveChart rounds={inspected.rounds} height={310} />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card tone="mint">
             <CardHeader>
               <CardTitle>Run Configuration & Cost Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-xs">
               {inspected.cost_savings && (
-                <div className="rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] p-3">
-                  <div className="font-semibold text-[#15803D]">
+                <div className="rounded-xl border border-[#9CDFD0] bg-[#F3F5FD]/85 p-3.5">
+                  <div className="font-semibold text-[#0F766E]">
                     Est. Savings:{" "}
                     {formatCurrency(
                       inspected.cost_savings.estimated_dollars_saved
                     )}
                   </div>
-                  <div className="mt-0.5 text-[#166534]">
+                  <div className="mt-0.5 text-[#115E59]">
                     {inspected.cost_savings.estimated_labels_saved} fewer labels (
                     {inspected.cost_savings.pct_dataset_labeled}% dataset used)
                   </div>
                 </div>
               )}
-              <div className="max-h-52 space-y-1.5 overflow-y-auto rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3 font-mono text-[11px]">
+              <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-[#BDE4DA] bg-[#EEF1FB]/90 p-3 font-mono text-[11px]">
                 {Object.entries(inspected.config).map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-2">
                     <span className="text-[#64748B]">{k}:</span>
-                    <span className="truncate text-[#172033]">
+                    <span className="truncate text-[#263452]">
                       {String(v)}
                     </span>
                   </div>

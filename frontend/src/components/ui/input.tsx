@@ -8,7 +8,7 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-1.5 text-sm text-[#172033] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-9 w-full rounded-xl border border-[#CBD5EE] bg-[#F8FAFF] px-3 py-1.5 text-sm text-[#263452] placeholder:text-[#64748B]/70 focus:border-[#4568D9] focus:bg-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#4568D9]/20 disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 py-1.5 text-sm text-[#172033] focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/15 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-9 w-full rounded-xl border border-[#CBD5EE] bg-[#F8FAFF] px-3 py-1.5 text-sm text-[#263452] focus:border-[#4568D9] focus:bg-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#4568D9]/20 disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}
@@ -32,4 +32,3 @@ export const Select = React.forwardRef<
   </select>
 ));
 Select.displayName = "Select";
-
