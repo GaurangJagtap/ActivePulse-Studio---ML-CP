@@ -78,11 +78,12 @@ export function DatasetExplorerPage({
       const res = await api.uploadDataset(fd);
       setUploadMsg({
         type: "success",
-        text: `Successfully uploaded ${res.name}! Refreshing catalog...`,
+        text: `Successfully uploaded ${res.name}! Loading dataset...`,
       });
       setTimeout(() => {
+        sessionStorage.setItem("activepulse_last_section", "datasets");
         window.location.reload();
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
       setUploadMsg({
         type: "error",
@@ -154,8 +155,18 @@ export function DatasetExplorerPage({
                 setOffset(0);
               }}
             >
-              <option value="cifar10">CIFAR-10 (Image Vision)</option>
-              <option value="agnews">AG News (Text Embeddings)</option>
+              {datasets && datasets.length > 0 ? (
+                datasets.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="cifar10">CIFAR-10 (Image Vision)</option>
+                  <option value="agnews">AG News (Text Embeddings)</option>
+                </>
+              )}
             </Select>
           </div>
 

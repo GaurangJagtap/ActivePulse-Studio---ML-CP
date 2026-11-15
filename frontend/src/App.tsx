@@ -19,7 +19,13 @@ import type {
 } from "@/types/api";
 
 export function App() {
-  const [section, setSection] = useState<NavSectionId>("overview");
+  const [section, setSection] = useState<NavSectionId>(() => {
+    const saved = sessionStorage.getItem("activepulse_last_section");
+    if (saved && ["overview", "datasets", "lab", "annotation", "benchmarks", "history"].includes(saved)) {
+      return saved as NavSectionId;
+    }
+    return "overview";
+  });
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [datasets, setDatasets] = useState<DatasetSummary[]>([]);
   const [models, setModels] = useState<ModelInfo[]>([]);

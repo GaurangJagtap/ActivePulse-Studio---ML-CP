@@ -202,13 +202,14 @@ def get_dataset_samples(
     feats = adapter.get_features(page_ids)
 
     samples: List[DatasetSamplePreview] = []
+    is_image = getattr(adapter, "modality", "image" if adapter.name == "cifar10" else "text") == "image"
     for i, item in enumerate(page):
         feat = feats[i]
         t_lbl = item["true_label"]
         a_lbl = item["label"]
-        img_b64 = feature_to_base64_png(feat) if adapter.name == "cifar10" else None
-        feat_summary = summarize_text_embedding(feat) if adapter.name == "agnews" else None
-        emb_preview = [round(float(v), 4) for v in feat.reshape(-1)[:16]] if adapter.name == "agnews" else None
+        img_b64 = feature_to_base64_png(feat) if is_image else None
+        feat_summary = summarize_text_embedding(feat) if not is_image else None
+        emb_preview = [round(float(v), 4) for v in feat.reshape(-1)[:16]] if not is_image else None
 
         samples.append(
             DatasetSamplePreview(
