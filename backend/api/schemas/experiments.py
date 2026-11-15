@@ -6,16 +6,16 @@ from pydantic import BaseModel, Field
 
 class ExperimentCreateRequest(BaseModel):
     name: Optional[str] = Field(default=None, max_length=120)
-    dataset: Literal["cifar10", "agnews"] = "cifar10"
-    model_type: Literal["cifar_cnn", "resnet18", "text_mlp"] = "cifar_cnn"
+    dataset: str = "cifar10"
+    model_type: str = "cifar_cnn"
     strategy: str = "hybrid"
     mode: Literal["simulated_oracle", "human_in_the_loop"] = "simulated_oracle"
-    initial_size: int = Field(default=30, ge=10, le=200)
+    initial_size: int = Field(default=30, ge=2, le=200)
     batch_size: int = Field(default=15, ge=1, le=50)
     max_rounds: int = Field(default=3, ge=1, le=20)
-    label_budget: Optional[int] = Field(default=300, ge=10, le=5000)
+    label_budget: Optional[int] = Field(default=300, ge=4, le=5000)
     target_accuracy: Optional[float] = Field(default=None, ge=0.05, le=1.0)
-    max_samples: int = Field(default=450, ge=50, le=5000)
+    max_samples: int = Field(default=450, ge=4, le=5000)
     use_synthetic: bool = True
     max_epochs: int = Field(default=6, ge=1, le=50)
     lr: float = Field(default=0.01, gt=0.0, le=1.0)

@@ -148,6 +148,7 @@ export function App() {
 
           {section === "lab" && (
             <ActiveLearningLabPage
+              datasets={datasets}
               models={models}
               strategies={strategies}
               selectedExperimentId={selectedExpId}

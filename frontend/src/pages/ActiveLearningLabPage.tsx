@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { api } from "@/services/api";
 import type {
+  DatasetSummary,
   ExperimentCreateRequest,
   ExperimentDetailResponse,
   ExperimentMode,
@@ -39,6 +40,7 @@ import type {
 import { formatNum, formatPct } from "@/utils/format";
 
 interface ActiveLearningLabPageProps {
+  datasets?: DatasetSummary[];
   models: ModelInfo[];
   strategies: StrategyInfo[];
   selectedExperimentId: string | null;
@@ -49,6 +51,7 @@ interface ActiveLearningLabPageProps {
 }
 
 export function ActiveLearningLabPage({
+  datasets = [],
   models,
   strategies,
   selectedExperimentId,
@@ -58,8 +61,8 @@ export function ActiveLearningLabPage({
   onNavigate,
 }: ActiveLearningLabPageProps) {
   const [name, setName] = useState("");
-  const [dataset, setDataset] = useState<"cifar10" | "agnews">("cifar10");
-  const [modelType, setModelType] = useState<"cifar_cnn" | "resnet18" | "text_mlp">("cifar_cnn");
+  const [dataset, setDataset] = useState<string>("cifar10");
+  const [modelType, setModelType] = useState<string>("cifar_cnn");
   const [strategy, setStrategy] = useState<string>("hybrid");
   const [mode, setMode] = useState<ExperimentMode>("simulated_oracle");
   const [initialSize, setInitialSize] = useState<number>(30);
@@ -79,21 +82,31 @@ export function ActiveLearningLabPage({
   const [pca, setPca] = useState<PcaEmbeddingResponse | null>(null);
   const [selected, setSelected] = useState<SelectedSamplesResponse | null>(null);
 
-  const compatibleModels = models.filter((m) =>
-    m.supported_datasets.includes(dataset)
-  );
+  const activeDatasetObj = datasets.find((d) => d.id === dataset);
+  const compatibleModels = models.filter((m) => {
+    if (m.supported_datasets.includes(dataset)) return true;
+    if (activeDatasetObj?.supported_models?.includes(m.id)) return true;
+    return false;
+  });
   const activeStrategyInfo = strategies.find((s) => s.id === strategy);
 
   // Keep model compatible when switching dataset
   useEffect(() => {
-    if (dataset === "cifar10" && modelType === "text_mlp") {
-      setModelType("cifar_cnn");
-      setLr(0.01);
-    } else if (dataset === "agnews" && modelType !== "text_mlp") {
-      setModelType("text_mlp");
-      setLr(0.02);
+    if (activeDatasetObj) {
+      if (!compatibleModels.some((m) => m.id === modelType)) {
+        const nextModel = activeDatasetObj.default_model || compatibleModels[0]?.id || "cifar_cnn";
+        setModelType(nextModel);
+      }
+    } else {
+      if (dataset === "cifar10" && modelType === "text_mlp") {
+        setModelType("cifar_cnn");
+        setLr(0.01);
+      } else if (dataset === "agnews" && modelType !== "text_mlp") {
+        setModelType("text_mlp");
+        setLr(0.02);
+      }
     }
-  }, [dataset, modelType]);
+  }, [dataset, modelType, activeDatasetObj, compatibleModels]);
 
   // Fetch PCA and selected samples whenever selected experiment changes or finishes
   useEffect(() => {
@@ -240,10 +253,20 @@ export function ActiveLearningLabPage({
                   </label>
                   <Select
                     value={dataset}
-                    onChange={(e) => setDataset(e.target.value as "cifar10" | "agnews")}
+                    onChange={(e) => setDataset(e.target.value)}
                   >
-                    <option value="cifar10">CIFAR-10 (Images)</option>
-                    <option value="agnews">AG News (Text Embeddings)</option>
+                    {datasets.length > 0 ? (
+                      datasets.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="cifar10">CIFAR-10 (Images)</option>
+                        <option value="agnews">AG News (Text Embeddings)</option>
+                      </>
+                    )}
                   </Select>
                 </div>
 
@@ -253,11 +276,7 @@ export function ActiveLearningLabPage({
                   </label>
                   <Select
                     value={modelType}
-                    onChange={(e) =>
-                      setModelType(
-                        e.target.value as "cifar_cnn" | "resnet18" | "text_mlp"
-                      )
-                    }
+                    onChange={(e) => setModelType(e.target.value)}
                   >
                     {compatibleModels.map((m) => (
                       <option key={m.id} value={m.id}>

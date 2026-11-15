@@ -19,7 +19,7 @@ export interface HealthResponse {
 export interface DatasetSummary {
   id: string;
   name: string;
-  modality: "image" | "text_embedding";
+  modality: "image" | "text_embedding" | "text";
   num_classes: number;
   class_names: string[];
   default_model: string;
@@ -110,8 +110,8 @@ export type ExperimentStatus =
 
 export interface ExperimentCreateRequest {
   name?: string;
-  dataset: "cifar10" | "agnews";
-  model_type: "cifar_cnn" | "resnet18" | "text_mlp";
+  dataset: string;
+  model_type: string;
   strategy: string;
   mode: ExperimentMode;
   initial_size: number;
