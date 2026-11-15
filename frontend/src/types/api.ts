@@ -365,7 +365,7 @@ export interface LabelStudioStatusResponse {
 }
 
 export interface BenchmarkRunRequest {
-  dataset: "cifar10" | "agnews";
+  dataset: string;
   strategies: string[];
   seeds: number[];
   max_samples: number;

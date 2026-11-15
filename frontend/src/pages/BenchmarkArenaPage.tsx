@@ -29,13 +29,16 @@ import { api } from "@/services/api";
 import type {
   BenchmarkJobStatus,
   BenchmarkResultsResponse,
+  DatasetSummary,
   StrategyInfo,
 } from "@/types/api";
 import { formatNum, formatPct } from "@/utils/format";
 
 export function BenchmarkArenaPage({
+  datasets = [],
   strategies,
 }: {
+  datasets?: DatasetSummary[];
   strategies: StrategyInfo[];
 }) {
   const [results, setResults] = useState<BenchmarkResultsResponse | null>(null);
@@ -43,7 +46,7 @@ export function BenchmarkArenaPage({
   const [error, setError] = useState<string | null>(null);
 
   // Benchmark runner config
-  const [dataset, setDataset] = useState<"cifar10" | "agnews">("cifar10");
+  const [dataset, setDataset] = useState<string>("cifar10");
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([
     "random",
     "entropy",
@@ -187,12 +190,20 @@ export function BenchmarkArenaPage({
                 </label>
                 <Select
                   value={dataset}
-                  onChange={(e) =>
-                    setDataset(e.target.value as "cifar10" | "agnews")
-                  }
+                  onChange={(e) => setDataset(e.target.value)}
                 >
-                  <option value="cifar10">CIFAR-10 (Synthetic CPU)</option>
-                  <option value="agnews">AG News (Embeddings)</option>
+                  {datasets && datasets.length > 0 ? (
+                    datasets.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="cifar10">CIFAR-10 (Synthetic CPU)</option>
+                      <option value="agnews">AG News (Embeddings)</option>
+                    </>
+                  )}
                 </Select>
               </div>
               <div className="space-y-1.5">

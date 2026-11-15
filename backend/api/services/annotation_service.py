@@ -114,7 +114,8 @@ def get_pending_annotations(exp_id: str) -> PendingAnnotationsResponse:
         if runtime is not None and getattr(runtime.orchestrator.model, "initialized_", False):
             probs = runtime.orchestrator.model.predict_calibrated_proba(feats)
 
-        modality = "image" if dataset.name == "cifar10" else "text_embedding"
+        is_img = getattr(dataset, "modality", "image" if dataset.name == "cifar10" else "text") == "image"
+        modality = "image" if is_img else "text_embedding"
         for i, sid in enumerate(queued_ids):
             p_vec = probs[i] if probs is not None else None
             if p_vec is not None:
@@ -136,15 +137,15 @@ def get_pending_annotations(exp_id: str) -> PendingAnnotationsResponse:
                     modality=modality,
                     round_num=summary.current_round,
                     predicted_class_id=pred_id,
-                    predicted_class_name=dataset.class_names[pred_id] if pred_id is not None else None,
+                    predicted_class_name=dataset.class_names[pred_id] if pred_id is not None and pred_id < len(dataset.class_names) else None,
                     confidence=round(float(conf), 4) if conf is not None else None,
                     uncertainty=round(unc, 4) if unc is not None else None,
                     probabilities=prob_list,
                     class_names=dataset.class_names,
-                    image_base64=feature_to_base64_png(feats[i]) if dataset.name == "cifar10" else None,
-                    feature_summary=summarize_text_embedding(feats[i]) if dataset.name == "agnews" else None,
+                    image_base64=feature_to_base64_png(feats[i]) if is_img else None,
+                    feature_summary=summarize_text_embedding(feats[i]) if not is_img else None,
                     embedding_preview=[round(float(v), 4) for v in feats[i].reshape(-1)[:16]]
-                    if dataset.name == "agnews"
+                    if not is_img
                     else None,
                 )
             )

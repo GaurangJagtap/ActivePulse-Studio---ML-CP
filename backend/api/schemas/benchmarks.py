@@ -5,14 +5,14 @@ from pydantic import BaseModel, Field
 
 
 class BenchmarkRunRequest(BaseModel):
-    dataset: Literal["cifar10", "agnews"] = "cifar10"
+    dataset: str = "cifar10"
     strategies: List[str] = Field(
         default=["random", "least_confidence", "margin", "entropy", "bald", "coreset", "badge", "hybrid"]
     )
     seeds: List[int] = Field(default=[42, 43], min_length=1, max_length=5)
-    max_samples: int = Field(default=500, ge=100, le=2000)
-    initial_size: int = Field(default=30, ge=10, le=200)
-    batch_size: int = Field(default=15, ge=5, le=50)
+    max_samples: int = Field(default=500, ge=10, le=2000)
+    initial_size: int = Field(default=30, ge=2, le=200)
+    batch_size: int = Field(default=15, ge=1, le=50)
     rounds: int = Field(default=3, ge=1, le=10)
     epochs: int = Field(default=4, ge=1, le=20)
     target_accuracy: float = Field(default=0.25, ge=0.05, le=1.0)

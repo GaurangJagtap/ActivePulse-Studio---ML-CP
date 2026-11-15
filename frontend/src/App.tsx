@@ -167,6 +167,7 @@ export function App() {
 
           {section === "annotation" && (
             <AnnotationStudioPage
+              datasets={datasets}
               experiments={experiments}
               selectedExperimentId={selectedExpId}
               onSelectExperiment={handleSelectExperiment}
@@ -176,7 +177,7 @@ export function App() {
           )}
 
           {section === "benchmarks" && (
-            <BenchmarkArenaPage strategies={strategies} />
+            <BenchmarkArenaPage datasets={datasets} strategies={strategies} />
           )}
 
           {section === "history" && (

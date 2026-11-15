@@ -39,6 +39,7 @@ import { ContinuousLearningEngine } from "@/components/shared/ContinuousLearning
 import type {
   AnnotationHistoryResponse,
   ContinuousLearningStatusResponse,
+  DatasetSummary,
   ExperimentSummary,
   LabelStudioStatusResponse,
   PendingAnnotationsResponse,
@@ -46,6 +47,7 @@ import type {
 import { formatNum, formatPct, formatShortDate } from "@/utils/format";
 
 interface AnnotationStudioPageProps {
+  datasets?: DatasetSummary[];
   experiments: ExperimentSummary[];
   selectedExperimentId: string | null;
   onSelectExperiment: (id: string) => void;
@@ -54,6 +56,7 @@ interface AnnotationStudioPageProps {
 }
 
 export function AnnotationStudioPage({
+  datasets = [],
   experiments,
   selectedExperimentId,
   onSelectExperiment,
@@ -121,23 +124,27 @@ export function AnnotationStudioPage({
     }
   }, [currentExp?.id, currentExp?.status, loadData]);
 
-  async function handleQuickStartHitl(dataset: "cifar10" | "agnews") {
+  async function handleQuickStartHitl(selectedDataset: string) {
     setBootstrapping(true);
     setError(null);
     try {
+      const activeDs = datasets.find((d) => d.id === selectedDataset);
+      const isImg = activeDs ? activeDs.modality === "image" : selectedDataset !== "agnews";
+      const modelType = activeDs?.default_model || (isImg ? "cifar_cnn" : "text_mlp");
+
       const created = await api.createExperiment({
-        name: `HITL ${dataset.toUpperCase()} Session`,
-        dataset,
-        model_type: dataset === "cifar10" ? "cifar_cnn" : "text_mlp",
+        name: `HITL ${activeDs?.name || selectedDataset} Session`,
+        dataset: selectedDataset,
+        model_type: modelType,
         strategy: "hybrid",
         mode: "human_in_the_loop",
-        initial_size: 20,
-        batch_size: 6,
-        max_rounds: 4,
-        max_samples: 300,
-        use_synthetic: true,
-        max_epochs: 5,
-        lr: dataset === "cifar10" ? 0.01 : 0.02,
+        initial_size: 6,
+        batch_size: 4,
+        max_rounds: 3,
+        max_samples: 200,
+        use_synthetic: false,
+        max_epochs: 4,
+        lr: isImg ? 0.01 : 0.02,
         seed: 42,
         label_noise_rate: 0.0,
         warm_start: false,
@@ -284,24 +291,32 @@ export function AnnotationStudioPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+            <Select
+              className="h-8 text-xs py-0 w-44"
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleQuickStartHitl(e.target.value);
+                }
+              }}
+              defaultValue=""
               disabled={bootstrapping}
-              onClick={() => handleQuickStartHitl("cifar10")}
             >
-              <Play className="h-3.5 w-3.5" />
-              {bootstrapping ? "Preparing Queue..." : "New HITL Image Batch"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={bootstrapping}
-              onClick={() => handleQuickStartHitl("agnews")}
-            >
-              <Play className="h-3.5 w-3.5" />
-              New HITL Text Batch
-            </Button>
+              <option value="" disabled>
+                {bootstrapping ? "Preparing Queue..." : "⚡ Start HITL Batch On..."}
+              </option>
+              {datasets && datasets.length > 0 ? (
+                datasets.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="cifar10">CIFAR-10 (Images)</option>
+                  <option value="agnews">AG News (Text)</option>
+                </>
+              )}
+            </Select>
           </div>
         </CardContent>
       </Card>
