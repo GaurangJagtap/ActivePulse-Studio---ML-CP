@@ -61,6 +61,7 @@ export function DatasetExplorerPage({
   const [uploadMsg, setUploadMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const activeMeta = datasets.find((d) => d.id === datasetId);
+  const isCustom = datasetId.startsWith("custom_");
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,15 +176,21 @@ export function DatasetExplorerPage({
               Data Source Mode
             </label>
             <Select
-              value={useSynthetic ? "synthetic" : "real"}
+              value={isCustom ? "custom" : useSynthetic ? "synthetic" : "real"}
               onChange={(e) => {
                 setUseSynthetic(e.target.value === "synthetic");
                 setOffset(0);
               }}
-              disabled={datasetId === "agnews"}
+              disabled={isCustom || datasetId === "agnews"}
             >
-              <option value="synthetic">Synthetic Fast-CPU Subset</option>
-              <option value="real">Real Torchvision Download</option>
+              {isCustom ? (
+                <option value="custom">Custom User Upload (.zip)</option>
+              ) : (
+                <>
+                  <option value="synthetic">Synthetic Fast-CPU Subset</option>
+                  <option value="real">Real Torchvision Download</option>
+                </>
+              )}
             </Select>
           </div>
 
@@ -197,11 +204,18 @@ export function DatasetExplorerPage({
                 setMaxSamples(Number(e.target.value));
                 setOffset(0);
               }}
+              disabled={isCustom}
             >
-              <option value="200">200 samples</option>
-              <option value="450">450 samples</option>
-              <option value="800">800 samples</option>
-              <option value="1200">1,200 samples</option>
+              {isCustom ? (
+                <option value={String(maxSamples)}>All {stats?.split_stats.n_total || maxSamples} Uploaded Samples</option>
+              ) : (
+                <>
+                  <option value="200">200 samples</option>
+                  <option value="450">450 samples</option>
+                  <option value="800">800 samples</option>
+                  <option value="1200">1,200 samples</option>
+                </>
+              )}
             </Select>
           </div>
 
