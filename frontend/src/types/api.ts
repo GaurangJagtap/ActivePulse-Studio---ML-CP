@@ -276,6 +276,62 @@ export interface AnnotationSubmitResponse {
   annotator: string;
   remaining_pending: number;
   ready_to_retrain: boolean;
+  is_correction?: boolean;
+  continuous_learning_triggered?: boolean;
+  message?: string | null;
+}
+
+export interface ContinuousModelMetrics {
+  accuracy: number | null;
+  macro_f1: number | null;
+  ece: number | null;
+  nll?: number | null;
+}
+
+export interface ContinuousRetrainEventItem {
+  event_id: string;
+  trigger_type: string;
+  trigger_sample_id: string | null;
+  samples_incorporated: number;
+  total_training_samples: number;
+  prev_model_version: string | null;
+  candidate_model_version: string | null;
+  prev_metrics: ContinuousModelMetrics;
+  candidate_metrics: ContinuousModelMetrics;
+  status: "pending" | "training" | "evaluating" | "promoted" | "rejected" | "failed";
+  decision_reason: string | null;
+  created_at: string | null;
+  completed_at: string | null;
+}
+
+export interface ContinuousLearningStatusResponse {
+  experiment_id: string;
+  experiment_name: string;
+  dataset: string;
+  model_type: string;
+  total_human_verified: number;
+  newly_corrected: number;
+  confirmed_predictions: number;
+  samples_awaiting_training: number;
+  total_training_samples: number;
+  retraining_status:
+    | "waiting_for_feedback"
+    | "feedback_received"
+    | "preparing_data"
+    | "retraining_in_progress"
+    | "evaluating_candidate"
+    | "model_updated_successfully"
+    | "candidate_rejected"
+    | "retraining_failed";
+  status_message: string;
+  active_model_version: string;
+  previous_model_version: string | null;
+  latest_candidate_version: string | null;
+  last_successful_update: string | null;
+  active_metrics: ContinuousModelMetrics;
+  previous_metrics: ContinuousModelMetrics | null;
+  delta_metrics: Record<string, number> | null;
+  history: ContinuousRetrainEventItem[];
 }
 
 export interface AnnotationHistoryItem {

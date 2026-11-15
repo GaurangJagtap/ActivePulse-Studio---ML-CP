@@ -105,7 +105,7 @@ export function DatasetExplorerPage({
       <Card tone="secondary">
         <CardContent className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#64748B]">
+            <label className="text-xs font-medium text-[#806D60]">
               Dataset Domain
             </label>
             <Select
@@ -121,7 +121,7 @@ export function DatasetExplorerPage({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#64748B]">
+            <label className="text-xs font-medium text-[#806D60]">
               Data Source Mode
             </label>
             <Select
@@ -138,7 +138,7 @@ export function DatasetExplorerPage({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#64748B]">
+            <label className="text-xs font-medium text-[#806D60]">
               Pool Sample Cap
             </label>
             <Select
@@ -156,7 +156,7 @@ export function DatasetExplorerPage({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#64748B]">
+            <label className="text-xs font-medium text-[#806D60]">
               Split Filter
             </label>
             <Select
@@ -174,7 +174,7 @@ export function DatasetExplorerPage({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#64748B]">
+            <label className="text-xs font-medium text-[#806D60]">
               Inspect Experiment DB
             </label>
             <Select
@@ -262,37 +262,37 @@ export function DatasetExplorerPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-xs">
-                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
-                    <span className="text-[#64748B]">Adapter ID</span>
-                    <span className="font-mono font-medium text-[#263452]">
+                  <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                    <span className="text-[#806D60]">Adapter ID</span>
+                    <span className="font-mono font-medium text-[#38271F]">
                       {stats.dataset_id}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
-                    <span className="text-[#64748B]">Modality</span>
+                  <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                    <span className="text-[#806D60]">Modality</span>
                     <Badge variant="default">{stats.modality}</Badge>
                   </div>
-                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
-                    <span className="text-[#64748B]">Supported Models</span>
-                    <span className="font-mono text-[#263452]">
+                  <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                    <span className="text-[#806D60]">Supported Models</span>
+                    <span className="font-mono text-[#38271F]">
                       {activeMeta?.supported_models.join(", ") || "—"}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-[#D4C3F5] pb-2">
-                    <span className="text-[#64748B]">Raw Text Storage</span>
-                    <span className="font-mono text-[#263452]">
+                  <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                    <span className="text-[#806D60]">Raw Text Storage</span>
+                    <span className="font-mono text-[#38271F]">
                       {activeMeta?.supports_raw_text ? "Yes" : "64-d Embeddings Only"}
                     </span>
                   </div>
-                  <p className="leading-relaxed text-[#64748B]">{activeMeta?.description}</p>
+                  <p className="leading-relaxed text-[#806D60]">{activeMeta?.description}</p>
 
-                  <div className="rounded-xl border border-dashed border-[#C7B3EE] bg-[#F3F5FD]/85 p-3">
-                    <div className="flex items-center gap-2 font-medium text-[#263452]">
-                      <UploadCloud className="h-4 w-4 text-[#4568D9]" />
+                  <div className="rounded-xl border border-dashed border-[#CBD5E1] bg-[#FAF3EC] p-3">
+                    <div className="flex items-center gap-2 font-medium text-[#38271F]">
+                      <UploadCloud className="h-4 w-4 text-[#6B3E26]" />
                       <span>Custom Dataset Upload</span>
                       <Badge variant="warning">Pending</Badge>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#64748B]">
+                    <p className="mt-1 text-[11px] text-[#806D60]">
                       {stats.upload_status_note}
                     </p>
                   </div>
@@ -340,10 +340,10 @@ export function DatasetExplorerPage({
                   {samplesRes?.samples.map((s) => (
                     <div
                       key={s.sample_id}
-                      className="rounded-xl border border-[#D5DDF2] bg-[#F3F5FD] p-3.5 transition-all hover:border-[#718BE0]"
+                      className="rounded-xl border border-[#E6D6C6] bg-[#FFFFFF] p-3.5 transition-all hover:border-[#6B3E26] hover:shadow-xs"
                     >
                       <div className="mb-2.5 flex items-center justify-between gap-2">
-                        <span className="truncate font-mono text-[11px] font-medium text-[#263452]">
+                        <span className="truncate font-mono text-[11px] font-medium text-[#38271F]">
                           {s.sample_id}
                         </span>
                         <Badge
@@ -360,7 +360,7 @@ export function DatasetExplorerPage({
                       </div>
 
                       {s.image_base64 ? (
-                        <div className="mb-2.5 flex h-28 items-center justify-center rounded-lg border border-[#D5DDF2] bg-[#E9EDFA]">
+                        <div className="mb-2.5 flex h-28 items-center justify-center rounded-lg border border-[#E6D6C6] bg-[#FAF3EC]">
                           <img
                             src={s.image_base64}
                             alt={s.sample_id}
@@ -370,12 +370,12 @@ export function DatasetExplorerPage({
                         </div>
                       ) : (
                         s.feature_summary && (
-                          <div className="mb-2.5 rounded-lg border border-[#D5DDF2] bg-[#E9EDFA] p-2.5 font-mono text-[11px] text-[#263452]">
+                          <div className="mb-2.5 rounded-lg border border-[#E6D6C6] bg-[#FAF3EC] p-2.5 font-mono text-[11px] text-[#38271F]">
                             <div>L2 Norm: {s.feature_summary.l2_norm}</div>
                             <div>
                               Mean/Std: {s.feature_summary.mean} / {s.feature_summary.std}
                             </div>
-                            <div className="truncate text-[#64748B]">
+                            <div className="truncate text-[#806D60]">
                               Vec: [{s.embedding_preview?.slice(0, 5).join(", ")}...]
                             </div>
                           </div>
@@ -383,13 +383,13 @@ export function DatasetExplorerPage({
                       )}
 
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#64748B]">True Class:</span>
-                        <span className="font-semibold text-[#263452]">
+                        <span className="text-[#806D60]">True Class:</span>
+                        <span className="font-semibold text-[#38271F]">
                           {s.true_class_name || "—"}
                         </span>
                       </div>
                       {s.annotator && (
-                        <div className="mt-1 flex items-center justify-between text-[11px] text-[#64748B]">
+                        <div className="mt-1 flex items-center justify-between text-[11px] text-[#806D60]">
                           <span>Source:</span>
                           <span className="font-mono">{s.annotator}</span>
                         </div>

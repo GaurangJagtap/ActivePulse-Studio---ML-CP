@@ -4,6 +4,7 @@ import type {
   BenchmarkJobStatus,
   BenchmarkResultsResponse,
   BenchmarkRunRequest,
+  ContinuousLearningStatusResponse,
   DatasetSamplesResponse,
   DatasetStatsResponse,
   DatasetSummary,
@@ -141,6 +142,18 @@ export const api = {
     ),
   getLabelStudioStatus: () =>
     request<LabelStudioStatusResponse>("/webhooks/label-studio/status"),
+  getContinuousLearningStatus: (experimentId: string) =>
+    request<ContinuousLearningStatusResponse>(
+      `/continuous-learning/status?experiment_id=${encodeURIComponent(experimentId)}`
+    ),
+  triggerContinuousRetrain: (experimentId: string, force = false) =>
+    request<{ status: string; job_id: string; message: string }>(
+      "/continuous-learning/retrain",
+      {
+        method: "POST",
+        body: JSON.stringify({ experiment_id: experimentId, force }),
+      }
+    ),
 
   // Benchmarks
   getBenchmarkResults: () => request<BenchmarkResultsResponse>("/benchmarks/results"),

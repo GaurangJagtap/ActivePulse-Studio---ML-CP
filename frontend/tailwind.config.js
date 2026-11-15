@@ -4,35 +4,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#E9EDFA",
-        "canvas-secondary": "#EEF1FB",
-        sidebar: "#17243A",
-        card: "#F3F5FD",
+        canvas: "#F6EFE7",
+        "canvas-secondary": "#EFE6DC",
+        sidebar: "#38271F",
+        card: "#FFFCF7",
         primary: {
-          DEFAULT: "#4568D9",
-          secondary: "#718BE0",
+          DEFAULT: "#6B3E26",
+          secondary: "#B98255",
           foreground: "#FFFFFF",
         },
-        aurora: {
-          lavender: "#EAE1FA",
-          lightblue: "#DCE5FF",
-          mint: "#D9F0EA",
-          teal: "#159C91",
+        coffee: {
+          brown: "#6B3E26",
+          caramel: "#B98255",
+          tan: "#E9D5C0",
+          cream: "#FFFCF7",
+          beige: "#F6EFE7",
         },
         ink: {
-          primary: "#263452",
-          secondary: "#64748B",
+          primary: "#38271F",
+          secondary: "#806D60",
+          muted: "#A89A8F",
         },
-        border: "#D5DDF2",
+        border: "#E6D6C6",
       },
       fontFamily: {
-        sans: ["'Plus Jakarta Sans'", "Inter", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       boxShadow: {
-        card: "0 1px 3px 0 rgba(23, 36, 58, 0.05), 0 4px 12px -2px rgba(69, 104, 217, 0.06)",
+        card: "0 2px 4px -1px rgba(56, 39, 31, 0.06), 0 4px 12px -2px rgba(107, 62, 38, 0.08)",
         "card-hover":
-          "0 4px 12px -2px rgba(23, 36, 58, 0.08), 0 8px 20px -4px rgba(69, 104, 217, 0.1)",
+          "0 4px 6px -1px rgba(56, 39, 31, 0.08), 0 10px 20px -3px rgba(107, 62, 38, 0.12)",
+        header: "0 2px 8px -2px rgba(56, 39, 31, 0.06)",
       },
     },
   },

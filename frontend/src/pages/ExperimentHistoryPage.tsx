@@ -124,7 +124,7 @@ export function ExperimentHistoryPage({
       <Card tone="secondary">
         <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#64748B]" />
+            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-[#806D60]" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -179,7 +179,7 @@ export function ExperimentHistoryPage({
         </CardHeader>
         <CardContent>
           {filteredExperiments.length === 0 ? (
-            <div className="py-10 text-center text-xs text-[#64748B]">
+            <div className="py-10 text-center text-xs text-[#806D60]">
               {experiments.length === 0
                 ? "No experiments recorded yet. Run a simulation in the Active Learning Lab to create one."
                 : "No experiments match the active filters."}
@@ -208,22 +208,22 @@ export function ExperimentHistoryPage({
                   return (
                     <TableRow
                       key={exp.id}
-                      className={isSelected ? "bg-[#DCE5FF]/55" : undefined}
+                      className={isSelected ? "bg-[#FAF3EC]" : undefined}
                     >
                       <TableCell>
                         <input
                           type="checkbox"
                           checked={isCompared}
                           onChange={() => toggleCompare(exp.id)}
-                          className="h-4 w-4 rounded border-[#CBD5EE] text-[#4568D9]"
+                          className="h-4 w-4 rounded border-[#E6D6C6] text-[#6B3E26]"
                           title="Select up to 4 runs to compare"
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium text-[#263452]">
+                        <div className="font-medium text-[#38271F]">
                           {exp.name}
                         </div>
-                        <div className="font-mono text-[11px] text-[#64748B]">
+                        <div className="font-mono text-[11px] text-[#806D60]">
                           {exp.id}
                         </div>
                       </TableCell>
@@ -239,16 +239,16 @@ export function ExperimentHistoryPage({
                       <TableCell className="font-mono text-xs">
                         {exp.n_labeled}
                       </TableCell>
-                      <TableCell className="font-mono text-xs font-semibold text-[#4568D9]">
+                      <TableCell className="font-mono text-xs font-semibold text-[#6B3E26]">
                         {formatPct(exp.latest_accuracy)}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-[#64748B]">
+                      <TableCell className="font-mono text-xs text-[#806D60]">
                         {formatPct(exp.latest_f1)} / {formatNum(exp.latest_ece)}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={exp.status} />
                       </TableCell>
-                      <TableCell className="text-xs text-[#64748B]">
+                      <TableCell className="text-xs text-[#806D60]">
                         {formatShortDate(exp.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -264,7 +264,7 @@ export function ExperimentHistoryPage({
                           <a
                             href={api.getExperimentExportUrl(exp.id)}
                             download={`${exp.id}_metrics.csv`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#64748B] hover:bg-[#DCE5FF]/60 hover:text-[#263452]"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#806D60] hover:bg-[#FAF3EC] hover:text-[#6B3E26]"
                             title="Export metrics CSV"
                           >
                             <Download className="h-4 w-4" />
@@ -290,10 +290,10 @@ export function ExperimentHistoryPage({
 
       {/* Side-by-Side Comparison */}
       {comparedRuns.length >= 2 && (
-        <Card tone="lavender">
+        <Card tone="default">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <GitCompare className="h-4 w-4 text-[#159C91]" />
+              <GitCompare className="h-4 w-4 text-[#B98255]" />
               <span>Side-by-Side Experiment Comparison ({comparedRuns.length})</span>
             </CardTitle>
           </CardHeader>
@@ -309,7 +309,7 @@ export function ExperimentHistoryPage({
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">Dataset / Model</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">Dataset / Model</TableCell>
                   {comparedRuns.map((r) => (
                     <TableCell key={r.id} className="font-mono text-xs">
                       {r.dataset} / {r.model_type}
@@ -317,7 +317,7 @@ export function ExperimentHistoryPage({
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">Strategy</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">Strategy</TableCell>
                   {comparedRuns.map((r) => (
                     <TableCell key={r.id} className="font-mono text-xs font-semibold">
                       {r.strategy}
@@ -325,7 +325,7 @@ export function ExperimentHistoryPage({
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">Labeled Samples</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">Labeled Samples</TableCell>
                   {comparedRuns.map((r) => (
                     <TableCell key={r.id} className="font-mono text-xs">
                       {r.n_labeled}
@@ -333,23 +333,23 @@ export function ExperimentHistoryPage({
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">Holdout Accuracy</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">Holdout Accuracy</TableCell>
                   {comparedRuns.map((r) => (
-                    <TableCell key={r.id} className="font-mono text-xs font-semibold text-[#4568D9]">
+                    <TableCell key={r.id} className="font-mono text-xs font-semibold text-[#6B3E26]">
                       {formatPct(r.latest_accuracy)}
                     </TableCell>
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">Macro-F1</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">Macro-F1</TableCell>
                   {comparedRuns.map((r) => (
-                    <TableCell key={r.id} className="font-mono text-xs text-[#159C91]">
+                    <TableCell key={r.id} className="font-mono text-xs text-[#B98255]">
                       {formatPct(r.latest_f1)}
                     </TableCell>
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium text-[#64748B]">ECE</TableCell>
+                  <TableCell className="font-medium text-[#806D60]">ECE</TableCell>
                   {comparedRuns.map((r) => (
                     <TableCell key={r.id} className="font-mono text-xs">
                       {formatNum(r.latest_ece)}
@@ -392,24 +392,24 @@ export function ExperimentHistoryPage({
             </CardHeader>
             <CardContent className="space-y-3 text-xs">
               {inspected.cost_savings && (
-                <div className="rounded-xl border border-[#9CDFD0] bg-[#F3F5FD]/85 p-3.5">
-                  <div className="font-semibold text-[#0F766E]">
+                <div className="rounded-xl border border-[#99F6E4] bg-[#FAF1E8] p-3.5">
+                  <div className="font-semibold text-[#B98255]">
                     Est. Savings:{" "}
                     {formatCurrency(
                       inspected.cost_savings.estimated_dollars_saved
                     )}
                   </div>
-                  <div className="mt-0.5 text-[#115E59]">
+                  <div className="mt-0.5 text-[#B98255]">
                     {inspected.cost_savings.estimated_labels_saved} fewer labels (
                     {inspected.cost_savings.pct_dataset_labeled}% dataset used)
                   </div>
                 </div>
               )}
-              <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-[#BDE4DA] bg-[#EEF1FB]/90 p-3 font-mono text-[11px]">
+              <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-3 font-mono text-[11px]">
                 {Object.entries(inspected.config).map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-2">
-                    <span className="text-[#64748B]">{k}:</span>
-                    <span className="truncate text-[#263452]">
+                    <span className="text-[#806D60]">{k}:</span>
+                    <span className="truncate text-[#38271F]">
                       {String(v)}
                     </span>
                   </div>

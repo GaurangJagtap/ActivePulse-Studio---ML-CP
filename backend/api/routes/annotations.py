@@ -8,6 +8,8 @@ from backend.api.schemas.annotations import (
     AnnotationSubmitRequest,
     AnnotationSubmitResponse,
     CompletedAnnotationsResponse,
+    ContinuousLearningStatusResponse,
+    ContinuousRetrainTriggerRequest,
     LabelStudioStatusResponse,
     LabelStudioSyncRequest,
     LabelStudioSyncResponse,
@@ -28,8 +30,38 @@ from backend.api.services.annotation_service import (
     submit_annotation,
     sync_label_studio_annotations,
 )
+from backend.api.services.continuous_service import (
+    get_continuous_learning_status,
+    trigger_continuous_retraining_async,
+)
 
 router = APIRouter(tags=["Annotations"])
+
+
+@router.get("/continuous-learning/status", response_model=ContinuousLearningStatusResponse, summary="Get continuous learning activity, retraining status, versions and metrics")
+def continuous_learning_status(experiment_id: str = Query(...)) -> ContinuousLearningStatusResponse:
+    try:
+        return get_continuous_learning_status(experiment_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/continuous-learning/retrain", summary="Manually trigger continuous retraining cycle on accumulated human feedback")
+def trigger_continuous_retrain(req: ContinuousRetrainTriggerRequest) -> dict:
+    try:
+        job_id = trigger_continuous_retraining_async(
+            exp_id=req.experiment_id,
+            trigger_type="manual",
+            force=req.force,
+        )
+        return {
+            "status": "triggered",
+            "job_id": job_id,
+            "experiment_id": req.experiment_id,
+            "message": "Continuous self-retraining job initiated in background.",
+        }
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.get("/annotations/pending", response_model=PendingAnnotationsResponse, summary="Get pending samples queued for human annotation (ground truth hidden)")

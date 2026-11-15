@@ -218,13 +218,13 @@ export function ActiveLearningLabPage({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLaunch} className="space-y-4">
-            <div className="space-y-3 rounded-xl border border-[#D5DDF2] bg-[#F3F5FD]/85 p-4">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#4568D9]">
+            <div className="space-y-3 rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-4">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6B3E26]">
                 1 · Domain, Model & Query Strategy
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Experiment Name (optional)
                   </label>
                   <Input
@@ -235,7 +235,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Dataset
                   </label>
                   <Select
@@ -248,7 +248,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     PyTorch Architecture
                   </label>
                   <Select
@@ -268,7 +268,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Query Strategy
                   </label>
                   <Select
@@ -285,13 +285,13 @@ export function ActiveLearningLabPage({
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl border border-[#D5DDF2] bg-[#EAE1FA]/35 p-4">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#5B21B6]">
+            <div className="space-y-3 rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-4">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6B3E26]">
                 2 · Active Learning Budget & Loop Schedule
               </div>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
                 <div className="col-span-2 space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Labeling Mode
                   </label>
                   <Select
@@ -308,7 +308,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Initial Seed
                   </label>
                   <Input
@@ -321,7 +321,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Batch (K)
                   </label>
                   <Input
@@ -334,7 +334,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Rounds
                   </label>
                   <Input
@@ -347,7 +347,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Label Budget
                   </label>
                   <Input
@@ -360,7 +360,7 @@ export function ActiveLearningLabPage({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-[#64748B]">
+                  <label className="text-xs font-medium text-[#806D60]">
                     Pool Size
                   </label>
                   <Input
@@ -377,7 +377,7 @@ export function ActiveLearningLabPage({
             <div className="flex flex-wrap items-end justify-between gap-4 border-t border-[#D5DDF2] pt-4">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="w-24 space-y-1">
-                  <label className="text-xs font-medium text-[#64748B]">Epochs</label>
+                  <label className="text-xs font-medium text-[#806D60]">Epochs</label>
                   <Input
                     type="number"
                     min={1}
@@ -387,7 +387,7 @@ export function ActiveLearningLabPage({
                   />
                 </div>
                 <div className="w-24 space-y-1">
-                  <label className="text-xs font-medium text-[#64748B]">Seed</label>
+                  <label className="text-xs font-medium text-[#806D60]">Seed</label>
                   <Input
                     type="number"
                     value={seed}
@@ -395,7 +395,7 @@ export function ActiveLearningLabPage({
                   />
                 </div>
                 <div className="w-28 space-y-1">
-                  <label className="text-xs font-medium text-[#64748B]">Oracle Noise</label>
+                  <label className="text-xs font-medium text-[#806D60]">Oracle Noise</label>
                   <Input
                     type="number"
                     step="0.05"
@@ -406,13 +406,13 @@ export function ActiveLearningLabPage({
                     onChange={(e) => setNoiseRate(Number(e.target.value))}
                   />
                 </div>
-                <label className="flex items-center gap-2 pt-4 text-xs text-[#263452]">
+                <label className="flex items-center gap-2 pt-4 text-xs text-[#38271F]">
                   <input
                     type="checkbox"
                     checked={useSynthetic}
                     disabled={dataset === "agnews"}
                     onChange={(e) => setUseSynthetic(e.target.checked)}
-                    className="h-4 w-4 rounded border-[#CBD5EE] text-[#4568D9]"
+                    className="h-4 w-4 rounded border-[#E6D6C6] text-[#6B3E26]"
                   />
                   Fast Synthetic Mode (CPU)
                 </label>
@@ -444,19 +444,19 @@ export function ActiveLearningLabPage({
 
       {/* Live Pipeline & Progress */}
       {activeSummary && (
-        <div className="space-y-3 rounded-2xl border border-[#C7D3F0] bg-[#DCE5FF]/45 p-4">
+        <div className="space-y-3 rounded-xl border border-[#BFDBFE] bg-[#FAF3EC] p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-semibold text-[#263452]">
+              <h2 className="text-sm font-semibold text-[#38271F]">
                 {activeSummary.name}
               </h2>
               <StatusBadge status={currentStatus} />
-              <span className="font-mono text-xs text-[#64748B]">
+              <span className="font-mono text-xs text-[#806D60]">
                 Round {progress?.current_round ?? activeSummary.current_round} /{" "}
                 {activeSummary.max_rounds}
               </span>
             </div>
-            <span className="font-mono text-xs font-medium text-[#4568D9]">
+            <span className="font-mono text-xs font-medium text-[#6B3E26]">
               {progress?.current_stage || activeSummary.current_stage}
             </span>
           </div>
@@ -511,10 +511,10 @@ export function ActiveLearningLabPage({
       </div>
 
       {/* Selected Samples Uncertainty & Diversity Diagnostics */}
-      <Card tone="lavender">
+      <Card tone="default">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#4568D9]" />
+            <Sparkles className="h-4 w-4 text-[#6B3E26]" />
             <span>Selected Batch: Uncertainty & Class Probability Analysis</span>
           </CardTitle>
           <CardDescription>
@@ -529,14 +529,14 @@ export function ActiveLearningLabPage({
               {selected.samples.slice(0, 6).map((s) => (
                 <div
                   key={s.sample_id}
-                  className="grid grid-cols-1 gap-4 rounded-xl border border-[#D4C3F5] bg-[#F3F5FD] p-4 sm:grid-cols-12"
+                  className="grid grid-cols-1 gap-4 rounded-xl border border-[#E6D6C6] bg-[#FFFFFF] p-4 sm:grid-cols-12"
                 >
                   <div className="space-y-2 sm:col-span-5">
-                    <div className="font-mono text-xs font-semibold text-[#263452]">
+                    <div className="font-mono text-xs font-semibold text-[#38271F]">
                       {s.sample_id}
                     </div>
                     {s.image_base64 && (
-                      <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#D5DDF2] bg-[#E9EDFA]">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-[#E6D6C6] bg-[#FAF3EC]">
                         <img
                           src={s.image_base64}
                           alt={s.sample_id}
@@ -547,32 +547,32 @@ export function ActiveLearningLabPage({
                     )}
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#64748B]">Model Guess:</span>
-                        <span className="font-medium text-[#4568D9]">
+                        <span className="text-[#806D60]">Model Guess:</span>
+                        <span className="font-medium text-[#6B3E26]">
                           {s.predicted_class_name}
                         </span>
                       </div>
                       {s.true_class_name && (
                         <div className="flex justify-between">
-                          <span className="text-[#64748B]">Oracle Truth:</span>
-                          <span className="font-medium text-[#159C91]">
+                          <span className="text-[#806D60]">Oracle Truth:</span>
+                          <span className="font-medium text-[#B98255]">
                             {s.true_class_name}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-[#64748B]">Confidence:</span>
-                        <span className="font-mono text-[#263452]">{formatPct(s.confidence)}</span>
+                        <span className="text-[#806D60]">Confidence:</span>
+                        <span className="font-mono text-[#38271F]">{formatPct(s.confidence)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#64748B]">Uncertainty:</span>
-                        <span className="font-mono text-[#B45309]">
+                        <span className="text-[#806D60]">Uncertainty:</span>
+                        <span className="font-mono text-[#B98255]">
                           {formatNum(s.uncertainty)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#64748B]">Entropy:</span>
-                        <span className="font-mono text-[#263452]">{formatNum(s.entropy)} bits</span>
+                        <span className="text-[#806D60]">Entropy:</span>
+                        <span className="font-mono text-[#38271F]">{formatNum(s.entropy)} bits</span>
                       </div>
                     </div>
                   </div>
@@ -588,7 +588,7 @@ export function ActiveLearningLabPage({
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-xs text-[#64748B]">
+            <div className="py-8 text-center text-xs text-[#806D60]">
               No queried sample diagnostics available for this run yet.
             </div>
           )}
@@ -623,7 +623,7 @@ export function ActiveLearningLabPage({
                       </TableCell>
                       <TableCell className="font-mono">{r.n_labeled}</TableCell>
                       <TableCell className="font-mono">{r.n_pool}</TableCell>
-                      <TableCell className="font-mono font-semibold text-[#4568D9]">
+                      <TableCell className="font-mono font-semibold text-[#6B3E26]">
                         {formatPct(r.test_acc)}
                       </TableCell>
                       <TableCell className="font-mono text-[#159C91]">
@@ -638,7 +638,7 @@ export function ActiveLearningLabPage({
                 </TableBody>
               </Table>
             ) : (
-              <div className="py-6 text-center text-xs text-[#64748B]">
+              <div className="py-6 text-center text-xs text-[#806D60]">
                 Waiting for Round 0 evaluation...
               </div>
             )}
@@ -648,12 +648,12 @@ export function ActiveLearningLabPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Terminal className="h-4 w-4 text-[#4568D9]" />
+              <Terminal className="h-4 w-4 text-[#6B3E26]" />
               <span>Engine Logs</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-56 overflow-y-auto rounded-xl border border-[#23334F] bg-[#17243A] p-3 font-mono text-[11px] leading-relaxed text-[#DCE5FF]">
+            <div className="h-56 overflow-y-auto rounded-xl border border-[#E6D6C6] bg-[#1E293B] p-3 font-mono text-[11px] leading-relaxed text-[#93C5FD]">
               {(progress?.logs || activeDetail?.logs || ["No logs yet."]).map(
                 (line, i) => (
                   <div key={i}>{line}</div>

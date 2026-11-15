@@ -9,11 +9,11 @@ export type CardTone =
   | "mint";
 
 const TONE_CLASSES: Record<CardTone, string> = {
-  default: "border-[#D5DDF2] bg-[#F3F5FD]",
-  secondary: "border-[#D5DDF2] bg-[#EEF1FB]",
-  blue: "border-[#C7D5FA] bg-[#DCE5FF]/65",
-  lavender: "border-[#D9CDF6] bg-[#EAE1FA]/65",
-  mint: "border-[#BDE5DA] bg-[#D9F0EA]/65",
+  default: "border-[#E6D6C6] bg-[#FFFCF7]",
+  secondary: "border-[#E6D6C6] bg-[#FFFCF7]",
+  blue: "border-[#D8BEA6] bg-[#FAF3EC]",
+  lavender: "border-[#E6D6C6] bg-[#FFFCF7]",
+  mint: "border-[#C9D9C9] bg-[#F2F7F2]",
 };
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -25,7 +25,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border text-[#263452] shadow-card transition-all duration-200",
+        "rounded-xl border text-[#38271F] shadow-card transition-all duration-200 hover:border-[#D4BFAC] hover:shadow-card-hover",
         TONE_CLASSES[tone],
         className
       )}
@@ -54,7 +54,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-sm font-semibold tracking-tight text-[#263452]",
+      "text-sm font-semibold tracking-tight text-[#38271F]",
       className
     )}
     {...props}
@@ -68,7 +68,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-xs text-[#64748B]", className)}
+    className={cn("text-xs text-[#806D60]", className)}
     {...props}
   />
 ));

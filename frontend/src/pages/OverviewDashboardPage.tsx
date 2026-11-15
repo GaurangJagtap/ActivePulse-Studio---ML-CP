@@ -79,31 +79,11 @@ export function OverviewDashboardPage({
           <CardContent className="flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center">
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#4568D9]">
-                  Active Experiment
-                </span>
+                <h2 className="text-base font-semibold text-[#38271F]">
+                  {summary.name}
+                </h2>
                 <StatusBadge status={summary.status} />
-                <span className="font-mono text-xs text-[#64748B]">
-                  {summary.id}
-                </span>
               </div>
-              <h2 className="text-base font-semibold text-[#263452]">
-                {summary.name}
-              </h2>
-              <p className="text-xs text-[#64748B]">
-                Model{" "}
-                <span className="font-mono font-medium text-[#263452]">
-                  {summary.model_type}
-                </span>{" "}
-                · Strategy{" "}
-                <span className="font-mono font-medium text-[#4568D9]">
-                  {summary.strategy}
-                </span>{" "}
-                · Dataset{" "}
-                <span className="font-mono font-medium uppercase text-[#263452]">
-                  {summary.dataset}
-                </span>
-              </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {summary.status === "awaiting_annotations" && (
@@ -133,7 +113,7 @@ export function OverviewDashboardPage({
               <h2 className="text-sm font-semibold text-[#263452]">
                 No Active Learning runs recorded yet
               </h2>
-              <p className="mt-1 text-xs text-[#64748B]">
+              <p className="mt-1 text-xs text-[#806D60]">
                 Launch an experiment in the Active Learning Lab to train a PyTorch model, evaluate holdout accuracy, and compute real label-cost savings.
               </p>
             </div>
@@ -204,7 +184,7 @@ export function OverviewDashboardPage({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#806D60]">
               Active Learning Pipeline Progress
             </h2>
             {summary && <StatusBadge status={summary.status} />}
@@ -241,7 +221,7 @@ export function OverviewDashboardPage({
           </CardHeader>
           <CardContent className="space-y-3">
             <Progress value={budgetPct} />
-            <div className="flex items-center justify-between text-xs text-[#64748B]">
+            <div className="flex items-center justify-between text-xs text-[#806D60]">
               <span>
                 Dataset labeled:{" "}
                 <strong className="font-mono text-[#263452]">
@@ -273,7 +253,7 @@ export function OverviewDashboardPage({
               </CardDescription>
             </div>
             {summary && (
-              <span className="rounded-lg bg-[#DCE5FF] px-2.5 py-1 font-mono text-xs font-medium text-[#4568D9]">
+              <span className="rounded-lg bg-[#FAF3EC] border border-[#D8BEA6] px-2.5 py-1 font-mono text-xs font-medium text-[#6B3E26]">
                 {summary.model_type}
               </span>
             )}
@@ -286,7 +266,7 @@ export function OverviewDashboardPage({
         <Card tone="mint">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-[#159C91]" />
+              <Activity className="h-4 w-4 text-[#B98255]" />
               <span>Active Run Telemetry</span>
             </CardTitle>
             <CardDescription>
@@ -296,44 +276,44 @@ export function OverviewDashboardPage({
           <CardContent className="space-y-3">
             {latestRound ? (
               <div className="space-y-2.5 text-sm">
-                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
-                  <span className="text-[#64748B]">Strategy</span>
-                  <span className="font-mono font-medium text-[#263452]">
+                <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                  <span className="text-[#806D60]">Strategy</span>
+                  <span className="font-mono font-medium text-[#38271F]">
                     {latestRound.strategy}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
-                  <span className="text-[#64748B]">Holdout Accuracy</span>
-                  <span className="font-mono font-semibold text-[#4568D9]">
+                <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                  <span className="text-[#806D60]">Holdout Accuracy</span>
+                  <span className="font-mono font-semibold text-[#6B3E26]">
                     {formatPct(latestRound.test_acc)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
-                  <span className="text-[#64748B]">Macro-F1 Score</span>
-                  <span className="font-mono font-medium text-[#159C91]">
+                <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                  <span className="text-[#806D60]">Macro-F1 Score</span>
+                  <span className="font-mono font-medium text-[#B98255]">
                     {formatPct(latestRound.test_f1)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-[#BCE3D9] pb-2">
-                  <span className="text-[#64748B]">Calibration Error (ECE)</span>
-                  <span className="font-mono font-medium text-[#263452]">
+                <div className="flex justify-between border-b border-[#E6D6C6] pb-2">
+                  <span className="text-[#806D60]">Calibration Error (ECE)</span>
+                  <span className="font-mono font-medium text-[#38271F]">
                     {formatNum(latestRound.ece)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#64748B]">Learned Temperature (T)</span>
-                  <span className="font-mono font-medium text-[#263452]">
+                  <span className="text-[#806D60]">Learned Temperature (T)</span>
+                  <span className="font-mono font-medium text-[#38271F]">
                     {formatNum(latestRound.temperature, 2)}
                   </span>
                 </div>
                 {savings && (
-                  <p className="rounded-xl bg-[#F3F5FD]/85 p-3 text-[11px] leading-relaxed text-[#64748B]">
+                  <p className="rounded-lg bg-[#FAF3EC] border border-[#E6D6C6] p-3 text-[11px] leading-relaxed text-[#806D60]">
                     {savings.methodology_note}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="py-10 text-center text-xs text-[#64748B]">
+              <div className="py-10 text-center text-xs text-[#806D60]">
                 Start a simulation or human-in-the-loop run to populate round telemetry.
               </div>
             )}
@@ -356,7 +336,7 @@ export function OverviewDashboardPage({
         </CardHeader>
         <CardContent>
           {experiments.length === 0 ? (
-            <div className="flex items-center justify-center gap-2 py-8 text-xs text-[#64748B]">
+            <div className="flex items-center justify-center gap-2 py-8 text-xs text-[#806D60]">
               <CheckCircle2 className="h-4 w-4 text-[#718BE0]" />
               <span>No experiments yet. Click "Active Learning Lab" to run your first loop.</span>
             </div>
@@ -383,7 +363,7 @@ export function OverviewDashboardPage({
                   >
                     <TableCell className="font-medium">
                       <div>{exp.name}</div>
-                      <div className="font-mono text-[11px] text-[#64748B]">
+                      <div className="font-mono text-[11px] text-[#806D60]">
                         {exp.id}
                       </div>
                     </TableCell>
@@ -393,7 +373,7 @@ export function OverviewDashboardPage({
                     <TableCell className="font-mono text-xs">
                       {exp.strategy}
                     </TableCell>
-                    <TableCell className="text-xs text-[#64748B]">
+                    <TableCell className="text-xs text-[#806D60]">
                       {exp.mode === "human_in_the_loop"
                         ? "Human-in-the-Loop"
                         : "Simulated Oracle"}
@@ -401,13 +381,13 @@ export function OverviewDashboardPage({
                     <TableCell className="font-mono text-xs">
                       {exp.current_round}/{exp.max_rounds}
                     </TableCell>
-                    <TableCell className="font-mono text-xs font-semibold text-[#4568D9]">
+                    <TableCell className="font-mono text-xs font-semibold text-[#6B3E26]">
                       {formatPct(exp.latest_accuracy)}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={exp.status} />
                     </TableCell>
-                    <TableCell className="text-xs text-[#64748B]">
+                    <TableCell className="text-xs text-[#806D60]">
                       {formatShortDate(exp.updated_at)}
                     </TableCell>
                   </TableRow>

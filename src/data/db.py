@@ -216,6 +216,53 @@ class ModelVersionRecord(Base):
     created_at = Column(DateTime, default=_utcnow)
 
 
+class ContinuousFeedbackRecord(Base):
+    """Tracks human corrections and confirmations for continuous self-retraining."""
+
+    __tablename__ = "continuous_feedback"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    experiment_id = Column(String(64), nullable=False, index=True)
+    sample_id = Column(String(64), nullable=False, index=True)
+    original_pred_id = Column(Integer, nullable=True)
+    original_pred_name = Column(String(64), nullable=True)
+    original_confidence = Column(Float, nullable=True)
+    human_label_id = Column(Integer, nullable=False)
+    human_label_name = Column(String(64), nullable=False)
+    is_correction = Column(Boolean, nullable=False, default=False)
+    annotator = Column(String(64), nullable=False)
+    model_version_id = Column(String(64), nullable=True)
+    used_in_training = Column(Boolean, nullable=False, default=False)
+    retrain_job_id = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=_utcnow)
+
+
+class ContinuousRetrainEventRecord(Base):
+    """Audits each continuous retraining cycle, candidate comparison, and promotion decision."""
+
+    __tablename__ = "continuous_retrain_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    event_id = Column(String(64), primary_key=False, unique=True, index=True)
+    experiment_id = Column(String(64), nullable=False, index=True)
+    trigger_type = Column(String(32), nullable=False, default="auto")  # auto, micro_batch, manual
+    trigger_sample_id = Column(String(64), nullable=True)
+    samples_incorporated = Column(Integer, nullable=False, default=0)
+    total_training_samples = Column(Integer, nullable=False, default=0)
+    prev_model_version = Column(String(64), nullable=True)
+    candidate_model_version = Column(String(64), nullable=True)
+    prev_accuracy = Column(Float, nullable=True)
+    prev_macro_f1 = Column(Float, nullable=True)
+    prev_ece = Column(Float, nullable=True)
+    candidate_accuracy = Column(Float, nullable=True)
+    candidate_macro_f1 = Column(Float, nullable=True)
+    candidate_ece = Column(Float, nullable=True)
+    status = Column(String(32), nullable=False, default="pending")  # pending, training, evaluating, promoted, rejected, failed
+    decision_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=_utcnow)
+    completed_at = Column(DateTime, nullable=True)
+
+
 class DatabaseManager:
     """Manages SQLite / PostgreSQL connection and transactional queries for AL state."""
 
@@ -719,8 +766,224 @@ class DatabaseManager:
                 "checkpoint_path": row.checkpoint_path,
                 "temperature": row.temperature,
                 "test_acc": row.test_acc,
+                "test_f1": row.test_f1,
+                "test_ece": row.test_ece,
+                "test_nll": row.test_nll,
                 "mlflow_run_id": row.mlflow_run_id,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
             }
+
+    def record_continuous_feedback(
+        self,
+        sample_id: str,
+        human_label_id: int,
+        human_label_name: str,
+        annotator: str,
+        original_pred_id: Optional[int] = None,
+        original_pred_name: Optional[str] = None,
+        original_confidence: Optional[float] = None,
+        model_version_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Record human verification/correction for continuous learning."""
+        is_corr = bool(original_pred_id is not None and original_pred_id != human_label_id)
+        now = _utcnow()
+        with self.get_session() as session:
+            rec = ContinuousFeedbackRecord(
+                experiment_id=self.experiment_id,
+                sample_id=sample_id,
+                original_pred_id=original_pred_id,
+                original_pred_name=original_pred_name,
+                original_confidence=original_confidence,
+                human_label_id=human_label_id,
+                human_label_name=human_label_name,
+                is_correction=is_corr,
+                annotator=annotator,
+                model_version_id=model_version_id,
+                used_in_training=False,
+                created_at=now,
+            )
+            session.add(rec)
+            session.commit()
+            return {
+                "id": rec.id,
+                "sample_id": rec.sample_id,
+                "is_correction": rec.is_correction,
+                "human_label_id": rec.human_label_id,
+                "human_label_name": rec.human_label_name,
+            }
+
+    def mark_feedback_used_in_training(self, feedback_ids: List[int], job_id: str) -> None:
+        if not feedback_ids:
+            return
+        with self.get_session() as session:
+            session.execute(
+                update(ContinuousFeedbackRecord)
+                .where(ContinuousFeedbackRecord.id.in_(feedback_ids))
+                .values(used_in_training=True, retrain_job_id=job_id)
+            )
+            session.commit()
+
+    def get_continuous_feedback_stats(self) -> Dict[str, int]:
+        with self.get_session() as session:
+            total_verified = (
+                session.query(ContinuousFeedbackRecord)
+                .filter(ContinuousFeedbackRecord.experiment_id == self.experiment_id)
+                .count()
+            )
+            corrections = (
+                session.query(ContinuousFeedbackRecord)
+                .filter(
+                    ContinuousFeedbackRecord.experiment_id == self.experiment_id,
+                    ContinuousFeedbackRecord.is_correction == True,  # noqa: E712
+                )
+                .count()
+            )
+            confirmed = total_verified - corrections
+            pending_retrain = (
+                session.query(ContinuousFeedbackRecord)
+                .filter(
+                    ContinuousFeedbackRecord.experiment_id == self.experiment_id,
+                    ContinuousFeedbackRecord.used_in_training == False,  # noqa: E712
+                )
+                .count()
+            )
+            trained = (
+                session.query(ContinuousFeedbackRecord)
+                .filter(
+                    ContinuousFeedbackRecord.experiment_id == self.experiment_id,
+                    ContinuousFeedbackRecord.used_in_training == True,  # noqa: E712
+                )
+                .count()
+            )
+            return {
+                "total_verified": total_verified,
+                "corrections": corrections,
+                "confirmed": confirmed,
+                "pending_retrain": pending_retrain,
+                "used_in_training": trained,
+            }
+
+    def get_pending_continuous_feedback(self) -> List[Dict[str, Any]]:
+        with self.get_session() as session:
+            rows = (
+                session.query(ContinuousFeedbackRecord)
+                .filter(
+                    ContinuousFeedbackRecord.experiment_id == self.experiment_id,
+                    ContinuousFeedbackRecord.used_in_training == False,  # noqa: E712
+                )
+                .order_by(ContinuousFeedbackRecord.created_at.asc())
+                .all()
+            )
+            return [
+                {
+                    "id": r.id,
+                    "sample_id": r.sample_id,
+                    "human_label_id": r.human_label_id,
+                    "human_label_name": r.human_label_name,
+                    "is_correction": r.is_correction,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in rows
+            ]
+
+    def record_retrain_event(
+        self,
+        event_id: str,
+        trigger_type: str,
+        trigger_sample_id: Optional[str] = None,
+        samples_incorporated: int = 0,
+        total_training_samples: int = 0,
+        prev_model_version: Optional[str] = None,
+        candidate_model_version: Optional[str] = None,
+        prev_accuracy: Optional[float] = None,
+        prev_macro_f1: Optional[float] = None,
+        prev_ece: Optional[float] = None,
+        status: str = "pending",
+        decision_reason: Optional[str] = None,
+    ) -> None:
+        now = _utcnow()
+        with self.get_session() as session:
+            rec = ContinuousRetrainEventRecord(
+                event_id=event_id,
+                experiment_id=self.experiment_id,
+                trigger_type=trigger_type,
+                trigger_sample_id=trigger_sample_id,
+                samples_incorporated=samples_incorporated,
+                total_training_samples=total_training_samples,
+                prev_model_version=prev_model_version,
+                candidate_model_version=candidate_model_version,
+                prev_accuracy=prev_accuracy,
+                prev_macro_f1=prev_macro_f1,
+                prev_ece=prev_ece,
+                status=status,
+                decision_reason=decision_reason,
+                created_at=now,
+            )
+            session.add(rec)
+            session.commit()
+
+    def update_retrain_event(
+        self,
+        event_id: str,
+        candidate_accuracy: Optional[float] = None,
+        candidate_macro_f1: Optional[float] = None,
+        candidate_ece: Optional[float] = None,
+        status: Optional[str] = None,
+        decision_reason: Optional[str] = None,
+    ) -> None:
+        now = _utcnow()
+        with self.get_session() as session:
+            rec = (
+                session.query(ContinuousRetrainEventRecord)
+                .filter(ContinuousRetrainEventRecord.event_id == event_id)
+                .first()
+            )
+            if rec:
+                if candidate_accuracy is not None:
+                    rec.candidate_accuracy = candidate_accuracy
+                if candidate_macro_f1 is not None:
+                    rec.candidate_macro_f1 = candidate_macro_f1
+                if candidate_ece is not None:
+                    rec.candidate_ece = candidate_ece
+                if status is not None:
+                    rec.status = status
+                    if status in ("promoted", "rejected", "failed"):
+                        rec.completed_at = now
+                if decision_reason is not None:
+                    rec.decision_reason = decision_reason
+                session.commit()
+
+    def list_retrain_events(self, limit: int = 50) -> List[Dict[str, Any]]:
+        with self.get_session() as session:
+            rows = (
+                session.query(ContinuousRetrainEventRecord)
+                .filter(ContinuousRetrainEventRecord.experiment_id == self.experiment_id)
+                .order_by(ContinuousRetrainEventRecord.created_at.desc())
+                .limit(limit)
+                .all()
+            )
+            return [
+                {
+                    "event_id": r.event_id,
+                    "trigger_type": r.trigger_type,
+                    "trigger_sample_id": r.trigger_sample_id,
+                    "samples_incorporated": r.samples_incorporated,
+                    "total_training_samples": r.total_training_samples,
+                    "prev_model_version": r.prev_model_version,
+                    "candidate_model_version": r.candidate_model_version,
+                    "prev_accuracy": r.prev_accuracy,
+                    "prev_macro_f1": r.prev_macro_f1,
+                    "prev_ece": r.prev_ece,
+                    "candidate_accuracy": r.candidate_accuracy,
+                    "candidate_macro_f1": r.candidate_macro_f1,
+                    "candidate_ece": r.candidate_ece,
+                    "status": r.status,
+                    "decision_reason": r.decision_reason,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                    "completed_at": r.completed_at.isoformat() if r.completed_at else None,
+                }
+                for r in rows
+            ]
 
     def record_job(
         self,

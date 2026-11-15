@@ -23,7 +23,7 @@ export function PipelineTracker({
   isCompleted,
 }: PipelineTrackerProps) {
   return (
-    <div className="rounded-2xl border border-[#D5DDF2] bg-[#F3F5FD] p-4 shadow-card">
+    <div className="rounded-xl border border-[#E6D6C6] bg-[#FFFCF7] p-4 shadow-card">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
         {stages.map((label, idx) => {
           const done = isCompleted || idx < activeIndex;
@@ -32,37 +32,37 @@ export function PipelineTracker({
             <div
               key={label}
               className={cn(
-                "flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-all",
+                "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition-all",
                 done
-                  ? "border-[#9CDFD0] bg-[#D9F0EA]/75"
+                  ? "border-[#B7D5C4] bg-[#EDF6F0]"
                   : active
-                    ? "border-[#AEBEFB] bg-[#DCE5FF]/85 shadow-sm"
-                    : "border-[#D5DDF2] bg-[#EEF1FB]/70"
+                    ? "border-[#D8BEA6] bg-[#FAF3EC] shadow-xs"
+                    : "border-[#E6D6C6] bg-[#F6EFE7]"
               )}
             >
               {done ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#159C91]" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#2D6A4F]" />
               ) : active && isRunning ? (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#4568D9]" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[#6B3E26]" />
               ) : active ? (
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#4568D9] font-mono text-[10px] font-semibold text-white">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#6B3E26] font-mono text-[10px] font-semibold text-white">
                   {idx + 1}
                 </span>
               ) : (
-                <Circle className="h-4 w-4 shrink-0 text-[#8B9BB4]" />
+                <Circle className="h-4 w-4 shrink-0 text-[#A89A8F]" />
               )}
               <div className="min-w-0">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-[#64748B]">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#806D60]">
                   Step {idx + 1}
                 </p>
                 <p
                   className={cn(
                     "truncate text-xs font-medium",
                     done
-                      ? "text-[#0F766E]"
+                      ? "text-[#2D6A4F]"
                       : active
-                        ? "text-[#263452]"
-                        : "text-[#64748B]"
+                        ? "text-[#38271F]"
+                        : "text-[#806D60]"
                   )}
                   title={label}
                 >

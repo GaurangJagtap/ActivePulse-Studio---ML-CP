@@ -50,6 +50,9 @@ class AnnotationSubmitResponse(BaseModel):
     annotator: str
     remaining_pending: int
     ready_to_retrain: bool
+    is_correction: bool = False
+    continuous_learning_triggered: bool = False
+    message: Optional[str] = None
 
 
 class AnnotationHistoryItem(BaseModel):
@@ -182,4 +185,77 @@ class CompletedAnnotationsResponse(BaseModel):
     experiment_id: str
     total_completed: int
     annotations: List[CompletedAnnotationItem]
+
+
+class ContinuousModelMetrics(BaseModel):
+    accuracy: Optional[float] = None
+    macro_f1: Optional[float] = None
+    ece: Optional[float] = None
+    nll: Optional[float] = None
+
+
+class ContinuousModelVersionInfo(BaseModel):
+    version_id: str
+    round_num: int
+    model_type: str
+    created_at: Optional[str] = None
+    metrics: ContinuousModelMetrics
+
+
+class ContinuousRetrainEventItem(BaseModel):
+    event_id: str
+    trigger_type: str
+    trigger_sample_id: Optional[str] = None
+    samples_incorporated: int
+    total_training_samples: int
+    prev_model_version: Optional[str] = None
+    candidate_model_version: Optional[str] = None
+    prev_metrics: ContinuousModelMetrics
+    candidate_metrics: ContinuousModelMetrics
+    status: Literal["pending", "training", "evaluating", "promoted", "rejected", "failed"]
+    decision_reason: Optional[str] = None
+    created_at: Optional[str] = None
+    completed_at: Optional[str] = None
+
+
+class ContinuousLearningStatusResponse(BaseModel):
+    experiment_id: str
+    experiment_name: str
+    dataset: str
+    model_type: str
+    # Learning Activity
+    total_human_verified: int
+    newly_corrected: int
+    confirmed_predictions: int
+    samples_awaiting_training: int
+    total_training_samples: int
+    # Retraining Status
+    retraining_status: Literal[
+        "waiting_for_feedback",
+        "feedback_received",
+        "preparing_data",
+        "retraining_in_progress",
+        "evaluating_candidate",
+        "model_updated_successfully",
+        "candidate_rejected",
+        "retraining_failed",
+    ]
+    status_message: str
+    # Model Versions
+    active_model_version: str
+    previous_model_version: Optional[str] = None
+    latest_candidate_version: Optional[str] = None
+    last_successful_update: Optional[str] = None
+    # Metrics tracking
+    active_metrics: ContinuousModelMetrics
+    previous_metrics: Optional[ContinuousModelMetrics] = None
+    delta_metrics: Optional[Dict[str, float]] = None
+    # History
+    history: List[ContinuousRetrainEventItem]
+
+
+class ContinuousRetrainTriggerRequest(BaseModel):
+    experiment_id: str
+    force: bool = False
+
 

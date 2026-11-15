@@ -162,7 +162,7 @@ export function BenchmarkArenaPage({
         <CardHeader className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-[#4568D9]" />
+              <Trophy className="h-4 w-4 text-[#6B3E26]" />
               <span>Run Multi-Seed Benchmark Suite</span>
             </CardTitle>
             <CardDescription>
@@ -172,7 +172,7 @@ export function BenchmarkArenaPage({
           <a
             href={api.getBenchmarkExportUrl()}
             download="benchmark_savings.csv"
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-[#C7D3F0] bg-[#F3F5FD] px-3 text-xs font-medium text-[#263452] transition-colors hover:bg-[#DCE5FF]/60"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#E6D6C6] bg-[#FFFFFF] px-3 text-xs font-medium text-[#38271F] transition-colors hover:bg-[#FAF3EC] hover:border-[#6B3E26]"
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV
@@ -182,7 +182,7 @@ export function BenchmarkArenaPage({
           <form onSubmit={handleRunBenchmark} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#64748B]">
+                <label className="text-xs font-medium text-[#806D60]">
                   Dataset
                 </label>
                 <Select
@@ -196,7 +196,7 @@ export function BenchmarkArenaPage({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#64748B]">
+                <label className="text-xs font-medium text-[#806D60]">
                   Seeds (comma-separated)
                 </label>
                 <Input
@@ -206,7 +206,7 @@ export function BenchmarkArenaPage({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#64748B]">
+                <label className="text-xs font-medium text-[#806D60]">
                   Rounds / Batch Size
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -227,7 +227,7 @@ export function BenchmarkArenaPage({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[#64748B]">
+                <label className="text-xs font-medium text-[#806D60]">
                   Target Accuracy (0.05–1.0)
                 </label>
                 <Input
@@ -241,7 +241,7 @@ export function BenchmarkArenaPage({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#D5DDF2] pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#E6D6C6] pt-4">
               <div className="flex flex-wrap gap-2">
                 {benchmarkStrategies.map((s) => {
                   const active = selectedStrategies.includes(s.id);
@@ -252,8 +252,8 @@ export function BenchmarkArenaPage({
                       onClick={() => toggleStrategy(s.id)}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                         active
-                          ? "border-[#4568D9] bg-[#DCE5FF] text-[#263452]"
-                          : "border-[#C7D3F0] bg-[#F3F5FD] text-[#64748B] hover:border-[#718BE0]"
+                          ? "border-[#6B3E26] bg-[#FAF3EC] text-[#6B3E26]"
+                          : "border-[#E6D6C6] bg-[#FFFFFF] text-[#806D60] hover:border-[#6B3E26]"
                       }`}
                     >
                       {s.id}
@@ -276,11 +276,11 @@ export function BenchmarkArenaPage({
 
             {job && job.status === "running" && (
               <div className="space-y-1.5 pt-2">
-                <div className="flex justify-between text-xs text-[#64748B]">
+                <div className="flex justify-between text-xs text-[#806D60]">
                   <span>
                     Executing {job.current_strategy} · seed {job.current_seed}
                   </span>
-                  <span className="font-mono text-[#263452]">
+                  <span className="font-mono text-[#38271F]">
                     {job.completed_steps} / {job.total_steps} runs
                   </span>
                 </div>
@@ -374,7 +374,7 @@ export function BenchmarkArenaPage({
                   {results.summary_rows.length ? (
                     <BenchmarkAlcBarChart rows={results.summary_rows} />
                   ) : (
-                    <div className="py-12 text-center text-xs text-[#64748B]">
+                    <div className="py-12 text-center text-xs text-[#806D60]">
                       No benchmark summary rows available yet.
                     </div>
                   )}
@@ -410,7 +410,7 @@ export function BenchmarkArenaPage({
                       return (
                         <TableRow
                           key={row.strategy}
-                          className={isTopAlc ? "bg-[#DCE5FF]/40" : undefined}
+                          className={isTopAlc ? "bg-[#FAF3EC]" : undefined}
                         >
                           <TableCell className="font-mono text-xs font-semibold">
                             {row.strategy}
@@ -434,10 +434,10 @@ export function BenchmarkArenaPage({
                           <TableCell className="font-mono text-xs">
                             {row.labels_to_target_display}
                           </TableCell>
-                          <TableCell className="font-mono text-xs font-semibold text-[#159C91]">
+                          <TableCell className="font-mono text-xs font-semibold text-[#B98255]">
                             {row.label_reduction_display}
                           </TableCell>
-                          <TableCell className="font-mono text-xs font-medium text-[#4568D9]">
+                          <TableCell className="font-mono text-xs font-medium text-[#6B3E26]">
                             {formatPct(row.final_accuracy)}
                           </TableCell>
                           <TableCell className="font-mono text-xs">

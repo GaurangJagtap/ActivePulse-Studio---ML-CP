@@ -190,6 +190,42 @@ def submit_annotation(req: AnnotationSubmitRequest) -> AnnotationSubmitResponse:
         is_double_annotation=bool(record.needs_review and record.status == "labeled"),
     )
 
+    # Continuous Learning feedback recording
+    from backend.api.services.continuous_service import trigger_continuous_retraining_async
+
+    orig_pred_id = record.pre_annotation_label
+    orig_conf = record.pre_annotation_confidence
+    runtime = get_experiment_runtime(req.experiment_id)
+    if orig_pred_id is None and runtime is not None and getattr(runtime.orchestrator.model, "initialized_", False):
+        try:
+            feats = dataset.get_features([req.sample_id])
+            probs = runtime.orchestrator.model.predict_calibrated_proba(feats)
+            orig_pred_id = int(np.argmax(probs[0]))
+            orig_conf = float(np.max(probs[0]))
+        except Exception:
+            pass
+
+    orig_pred_name = dataset.class_names[orig_pred_id] if orig_pred_id is not None and 0 <= orig_pred_id < len(dataset.class_names) else None
+    
+    cl_feedback = db.record_continuous_feedback(
+        sample_id=req.sample_id,
+        human_label_id=req.label_id,
+        human_label_name=dataset.class_names[req.label_id],
+        annotator=annotator_tag,
+        original_pred_id=orig_pred_id,
+        original_pred_name=orig_pred_name,
+        original_confidence=orig_conf,
+    )
+    is_correction = bool(cl_feedback["is_correction"])
+
+    # Trigger automatic continuous retraining in background
+    trigger_type = "auto_correction" if is_correction else "auto_confirmation"
+    trigger_continuous_retraining_async(
+        exp_id=req.experiment_id,
+        trigger_type=trigger_type,
+        trigger_sample_id=req.sample_id,
+    )
+
     counts = _get_db_counts(db)
     _update_meta(
         req.experiment_id,
@@ -197,10 +233,11 @@ def submit_annotation(req: AnnotationSubmitRequest) -> AnnotationSubmitResponse:
         n_pool=counts["n_pool"],
         n_queued=counts["n_queued"],
     )
+    feedback_label_type = "CORRECTION" if is_correction else "CONFIRMATION"
     _append_log(
         req.experiment_id,
-        f"Annotated sample {req.sample_id} as '{dataset.class_names[req.label_id]}' ({annotator_tag}). "
-        f"Pending queue: {counts['n_queued']}.",
+        f"Annotated sample {req.sample_id} as '{dataset.class_names[req.label_id]}' ({annotator_tag}) [{feedback_label_type}]. "
+        f"Queued for continuous self-retraining. Pending queue: {counts['n_queued']}.",
     )
 
     return AnnotationSubmitResponse(
@@ -211,6 +248,9 @@ def submit_annotation(req: AnnotationSubmitRequest) -> AnnotationSubmitResponse:
         annotator=annotator_tag,
         remaining_pending=counts["n_queued"],
         ready_to_retrain=(counts["n_queued"] == 0),
+        is_correction=is_correction,
+        continuous_learning_triggered=True,
+        message=f"Human {feedback_label_type.lower()} saved. Model self-retraining initiated.",
     )
 
 

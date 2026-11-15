@@ -64,6 +64,7 @@ class ActiveLearningClassifier(NeuralNetClassifier):
             max_epochs=max_epochs,
             lr=lr,
             verbose=verbose,
+            iterator_train__drop_last=True,
             **kwargs,
         )
 

@@ -7,13 +7,13 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-[#B8C9F8] bg-[#DCE5FF] text-[#2F4EB8]",
-        lavender: "border-[#D2C1F5] bg-[#EAE1FA] text-[#55389B]",
-        teal: "border-[#A9DFD4] bg-[#D9F0EA] text-[#0E746C]",
-        success: "border-[#A9DFD4] bg-[#D9F0EA] text-[#0E746C]",
-        warning: "border-[#F3D8A1] bg-[#FDF3DB] text-[#9A5B13]",
-        danger: "border-[#F5BDBD] bg-[#FDECEC] text-[#B42318]",
-        neutral: "border-[#D5DDF2] bg-[#EEF1FB] text-[#475569]",
+        default: "border-[#D8BEA6] bg-[#FAF3EC] text-[#6B3E26]",
+        lavender: "border-[#E6D6C6] bg-[#F1E8DF] text-[#6B3E26]",
+        teal: "border-[#DFC6AF] bg-[#FAF1E8] text-[#8C5832]",
+        success: "border-[#B7D5C4] bg-[#EDF6F0] text-[#2D6A4F]",
+        warning: "border-[#EAD3A6] bg-[#FDF8ED] text-[#9A6218]",
+        danger: "border-[#F1BDB7] bg-[#FDF0EE] text-[#A63529]",
+        neutral: "border-[#E6D6C6] bg-[#F6EFE7] text-[#806D60]",
       },
     },
     defaultVariants: {

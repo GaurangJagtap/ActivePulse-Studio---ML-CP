@@ -13,14 +13,14 @@ import {
 import type { BenchmarkCurvePoint, BenchmarkSavingsRow } from "@/types/api";
 
 const STRATEGY_COLORS: Record<string, string> = {
-  random: "#64748B",
-  least_confidence: "#D97706",
-  margin: "#7C3AED",
-  entropy: "#159C91",
-  bald: "#DB2777",
-  coreset: "#059669",
-  badge: "#718BE0",
-  hybrid: "#4568D9",
+  random: "#806D60",
+  least_confidence: "#D99127",
+  margin: "#6B3E26",
+  entropy: "#B98255",
+  bald: "#A87042",
+  coreset: "#2D6A4F",
+  badge: "#4E2B1A",
+  hybrid: "#8C5832",
 };
 
 export function BenchmarkAlcBarChart({ rows }: { rows: BenchmarkSavingsRow[] }) {
@@ -34,29 +34,30 @@ export function BenchmarkAlcBarChart({ rows }: { rows: BenchmarkSavingsRow[] }) 
     <div style={{ width: "100%", height: 320 }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#D5DDF2" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#EFE4D8" vertical={false} />
           <XAxis
             dataKey="strategy"
-            tick={{ fontSize: 11, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 11, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
             angle={-15}
             textAnchor="end"
             height={48}
           />
           <YAxis
             tickFormatter={(v) => `${v}%`}
-            tick={{ fontSize: 11, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 11, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#F3F5FD",
-              borderColor: "#C7D3F0",
-              borderRadius: "10px",
+              backgroundColor: "#FFFCF7",
+              borderColor: "#E6D6C6",
+              borderRadius: "8px",
               fontSize: "12px",
-              color: "#263452",
+              color: "#38271F",
+              boxShadow: "0 4px 12px rgba(56, 39, 31, 0.1)",
             }}
             formatter={(val: number, name: string) => [
               `${val}%`,
@@ -64,12 +65,12 @@ export function BenchmarkAlcBarChart({ rows }: { rows: BenchmarkSavingsRow[] }) 
             ]}
           />
           <Legend wrapperStyle={{ fontSize: "12px" }} />
-          <Bar dataKey="alc" name="ALC Score (%)" fill="#4568D9" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="alc" name="ALC Score (%)" fill="#6B3E26" radius={[4, 4, 0, 0]} />
           <Bar
             dataKey="reduction"
             name="Label Reduction vs Random (%)"
-            fill="#159C91"
-            radius={[6, 6, 0, 0]}
+            fill="#B98255"
+            radius={[4, 4, 0, 0]}
           />
         </BarChart>
       </ResponsiveContainer>
@@ -86,7 +87,7 @@ export function BenchmarkCurvesChart({
 }) {
   if (!points.length) {
     return (
-      <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed border-[#C7D3F0] bg-[#EEF1FB]/80 text-xs text-[#64748B]">
+      <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed border-[#E6D6C6] bg-[#FFFCF7] text-xs text-[#806D60]">
         Run a multi-seed benchmark above to generate interactive per-round learning curves across strategies.
       </div>
     );
@@ -110,32 +111,33 @@ export function BenchmarkCurvesChart({
     <div style={{ width: "100%", height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 12, right: 24, left: 4, bottom: 14 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#D5DDF2" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#EFE4D8" />
           <XAxis
             dataKey="n_labeled"
-            tick={{ fontSize: 12, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 12, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
             label={{
               value: "Annotation Budget (Labeled Samples)",
               position: "insideBottom",
               offset: -6,
-              style: { fontSize: 11, fill: "#64748B", fontWeight: 500 },
+              style: { fontSize: 11, fill: "#806D60", fontWeight: 500 },
             }}
           />
           <YAxis
             tickFormatter={(v) => `${v}%`}
-            tick={{ fontSize: 12, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 12, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#F3F5FD",
-              borderColor: "#C7D3F0",
-              borderRadius: "10px",
+              backgroundColor: "#FFFCF7",
+              borderColor: "#E6D6C6",
+              borderRadius: "8px",
               fontSize: "12px",
-              color: "#263452",
+              color: "#38271F",
+              boxShadow: "0 4px 12px rgba(56, 39, 31, 0.1)",
             }}
             formatter={(val: number, name: string) => [`${val}%`, name]}
           />
@@ -146,7 +148,7 @@ export function BenchmarkCurvesChart({
               type="monotone"
               dataKey={strat}
               name={strat}
-              stroke={STRATEGY_COLORS[strat] || "#4568D9"}
+              stroke={STRATEGY_COLORS[strat] || "#6B3E26"}
               strokeWidth={strat === "random" ? 2 : 2.75}
               strokeDasharray={strat === "random" ? "5 5" : undefined}
               dot={{ r: 3.5 }}

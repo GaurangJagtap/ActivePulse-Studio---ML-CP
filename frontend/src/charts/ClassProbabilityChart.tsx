@@ -38,7 +38,7 @@ export function ClassProbabilityChart({
             type="number"
             domain={[0, 100]}
             tickFormatter={(v) => `${v}%`}
-            tick={{ fontSize: 11, fill: "#64748B" }}
+            tick={{ fontSize: 11, fill: "#806D60" }}
           />
           <YAxis
             type="category"
@@ -48,20 +48,21 @@ export function ClassProbabilityChart({
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#F3F5FD",
-              borderColor: "#C7D3F0",
-              borderRadius: "10px",
+              backgroundColor: "#FFFCF7",
+              borderColor: "#E6D6C6",
+              borderRadius: "8px",
               fontSize: "12px",
-              color: "#263452",
+              color: "#38271F",
+              boxShadow: "0 4px 12px rgba(56, 39, 31, 0.1)",
             }}
             formatter={(val: number) => [`${val}%`, "Probability"]}
           />
-          <Bar dataKey="probability" radius={[0, 6, 6, 0]}>
+          <Bar dataKey="probability" radius={[0, 4, 4, 0]}>
             {data.map((entry) => (
               <Cell
                 key={entry.name}
                 fill={
-                  entry.name === predictedClassName ? "#4568D9" : "#9AAAD0"
+                  entry.name === predictedClassName ? "#6B3E26" : "#E9D5C0"
                 }
               />
             ))}

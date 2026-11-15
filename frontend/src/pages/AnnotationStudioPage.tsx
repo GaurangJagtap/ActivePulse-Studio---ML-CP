@@ -35,8 +35,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "@/services/api";
+import { ContinuousLearningEngine } from "@/components/shared/ContinuousLearningEngine";
 import type {
   AnnotationHistoryResponse,
+  ContinuousLearningStatusResponse,
   ExperimentSummary,
   LabelStudioStatusResponse,
   PendingAnnotationsResponse,
@@ -71,6 +73,7 @@ export function AnnotationStudioPage({
   const [pending, setPending] = useState<PendingAnnotationsResponse | null>(null);
   const [history, setHistory] = useState<AnnotationHistoryResponse | null>(null);
   const [lsStatus, setLsStatus] = useState<LabelStudioStatusResponse | null>(null);
+  const [clStatus, setClStatus] = useState<ContinuousLearningStatusResponse | null>(null);
   const [sampleIndex, setSampleIndex] = useState(0);
   const [selectedLabelId, setSelectedLabelId] = useState<number | null>(null);
 
@@ -78,20 +81,23 @@ export function AnnotationStudioPage({
   const [submitting, setSubmitting] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [bootstrapping, setBootstrapping] = useState(false);
+  const [isRetrainingCL, setIsRetrainingCL] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async (expId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const [pendRes, histRes, lsRes] = await Promise.all([
+      const [pendRes, histRes, lsRes, clRes] = await Promise.all([
         api.getPendingAnnotations(expId),
         api.getAnnotationHistory(expId),
         api.getLabelStudioStatus(),
+        api.getContinuousLearningStatus(expId).catch(() => null),
       ]);
       setPending(pendRes);
       setHistory(histRes);
       setLsStatus(lsRes);
+      setClStatus(clRes);
       setSampleIndex((idx) =>
         pendRes.samples.length === 0
           ? 0
@@ -175,6 +181,32 @@ export function AnnotationStudioPage({
     }
   }
 
+  async function handleTriggerContinuousRetrain() {
+    if (!currentExp) return;
+    setIsRetrainingCL(true);
+    setError(null);
+    try {
+      await api.triggerContinuousRetrain(currentExp.id, true);
+      for (let i = 0; i < 20; i++) {
+        await new Promise((r) => setTimeout(r, 600));
+        const res = await api.getContinuousLearningStatus(currentExp.id);
+        setClStatus(res);
+        if (
+          res.retraining_status === "model_updated_successfully" ||
+          res.retraining_status === "candidate_rejected" ||
+          res.retraining_status === "waiting_for_feedback"
+        ) {
+          onRefreshExperiment(currentExp.id);
+          break;
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to trigger continuous retraining.");
+    } finally {
+      setIsRetrainingCL(false);
+    }
+  }
+
   async function handleRetrainAndAdvance() {
     if (!currentExp) return;
     setAdvancing(true);
@@ -215,7 +247,7 @@ export function AnnotationStudioPage({
         <CardContent className="flex flex-col justify-between gap-4 p-5 lg:flex-row lg:items-center">
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-72">
-              <label className="mb-1 block text-xs font-medium text-[#64748B]">
+              <label className="mb-1 block text-xs font-medium text-[#806D60]">
                 Workspace Experiment
               </label>
               <Select
@@ -234,7 +266,7 @@ export function AnnotationStudioPage({
             </div>
 
             <div className="w-48">
-              <label className="mb-1 block text-xs font-medium text-[#64748B]">
+              <label className="mb-1 block text-xs font-medium text-[#806D60]">
                 Annotator ID
               </label>
               <Input
@@ -277,9 +309,9 @@ export function AnnotationStudioPage({
       {error && <ErrorBanner message={error} />}
 
       {/* Blind Annotation Guarantee Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#AEBEFB] bg-[#DCE5FF]/70 px-4 py-3 text-xs text-[#263452]">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#BFDBFE] bg-[#FAF3EC] px-4 py-3 text-xs text-[#38271F]">
         <div className="flex items-center gap-2">
-          <EyeOff className="h-4 w-4 shrink-0 text-[#4568D9]" />
+          <EyeOff className="h-4 w-4 shrink-0 text-[#6B3E26]" />
           <span>
             <strong>Blind Annotation Mode:</strong> Ground-truth labels are strictly excluded from the pending annotation API response until after submission.
           </span>
@@ -296,33 +328,33 @@ export function AnnotationStudioPage({
         <Card tone="blue">
           <CardContent className="grid grid-cols-1 items-center gap-4 p-5 md:grid-cols-4">
             <div>
-              <p className="text-xs font-medium text-[#64748B]">Pending in Queue</p>
-              <p className="font-mono text-2xl font-semibold text-[#4568D9]">
+              <p className="text-xs font-medium text-[#806D60]">Pending in Queue</p>
+              <p className="font-mono text-2xl font-semibold text-[#6B3E26]">
                 {pending.pending_count}
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-[#64748B]">Human Labels Submitted</p>
-              <p className="font-mono text-2xl font-semibold text-[#159C91]">
+              <p className="text-xs font-medium text-[#806D60]">Human Labels Submitted</p>
+              <p className="font-mono text-2xl font-semibold text-[#B98255]">
                 {pending.completed_human_count}
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-[#64748B]">Total Labeled (Incl. Seed)</p>
-              <p className="font-mono text-2xl font-semibold text-[#263452]">
+              <p className="text-xs font-medium text-[#806D60]">Total Labeled (Incl. Seed)</p>
+              <p className="font-mono text-2xl font-semibold text-[#38271F]">
                 {pending.total_labeled_count}
               </p>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="font-medium text-[#64748B]">Human Batch Progress</span>
-                <span className="font-mono font-semibold text-[#263452]">
+                <span className="font-medium text-[#806D60]">Human Batch Progress</span>
+                <span className="font-mono font-semibold text-[#38271F]">
                   {progressPct.toFixed(0)}%
                 </span>
               </div>
               <Progress
                 value={progressPct}
-                indicatorClassName="bg-[#159C91]"
+                indicatorClassName="bg-[#B98255]"
               />
             </div>
           </CardContent>
@@ -378,32 +410,32 @@ export function AnnotationStudioPage({
             </CardHeader>
             <CardContent className="flex flex-1 flex-col justify-center p-6">
               {activeSample.modality === "image" && activeSample.image_base64 ? (
-                <div className="flex h-80 items-center justify-center rounded-2xl border border-[#C7D3F0] bg-[#E9EDFA] p-6">
+                <div className="flex h-80 items-center justify-center rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-6">
                   <img
                     src={activeSample.image_base64}
                     alt={activeSample.sample_id}
-                    className="h-60 w-60 rounded-xl object-contain shadow-sm"
+                    className="h-60 w-60 rounded-lg object-contain shadow-xs"
                     style={{ imageRendering: "pixelated" }}
                   />
                 </div>
               ) : (
-                <div className="space-y-4 rounded-2xl border border-[#C7D3F0] bg-[#E9EDFA] p-6">
+                <div className="space-y-4 rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-[#263452]">
+                    <span className="text-sm font-semibold text-[#38271F]">
                       AG News 64-d Text Embedding Vector
                     </span>
-                    <Badge variant="lavender">Embedding Representation</Badge>
+                    <Badge variant="default">Embedding Representation</Badge>
                   </div>
-                  <p className="text-xs leading-relaxed text-[#64748B]">
+                  <p className="text-xs leading-relaxed text-[#806D60]">
                     Current backend adapter represents news items as 64-dimensional normalized feature vectors rather than raw text strings.
                   </p>
                   {activeSample.feature_summary && (
-                    <div className="grid grid-cols-2 gap-3 rounded-xl border border-[#D5DDF2] bg-[#F3F5FD] p-4 font-mono text-xs">
+                    <div className="grid grid-cols-2 gap-3 rounded-xl border border-[#E6D6C6] bg-[#FFFFFF] p-4 font-mono text-xs">
                       {Object.entries(activeSample.feature_summary).map(
                         ([k, v]) => (
                           <div key={k} className="flex justify-between">
-                            <span className="text-[#64748B]">{k}:</span>
-                            <span className="font-semibold text-[#263452]">{v}</span>
+                            <span className="text-[#806D60]">{k}:</span>
+                            <span className="font-semibold text-[#38271F]">{v}</span>
                           </div>
                         )
                       )}
@@ -417,7 +449,7 @@ export function AnnotationStudioPage({
           {/* Right Column: Separated Predictions/Confidence Card & Annotation Controls Card */}
           <div className="space-y-6 lg:col-span-6">
             {/* 1. Model Predictions & Confidence Card */}
-            <Card tone="lavender">
+            <Card tone="default">
               <CardHeader className="pb-3">
                 <CardTitle>Model Prediction & Uncertainty</CardTitle>
                 <CardDescription>
@@ -425,28 +457,28 @@ export function AnnotationStudioPage({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-3 rounded-xl border border-[#D4C3F5] bg-[#F3F5FD]/90 p-3 text-center">
+                <div className="grid grid-cols-3 gap-3 rounded-xl border border-[#E6D6C6] bg-[#FAF3EC] p-3 text-center">
                   <div>
-                    <div className="text-[11px] font-medium text-[#64748B]">
+                    <div className="text-[11px] font-medium text-[#806D60]">
                       Model Guess
                     </div>
-                    <div className="mt-0.5 text-xs font-semibold text-[#4568D9]">
+                    <div className="mt-0.5 text-xs font-semibold text-[#6B3E26]">
                       {activeSample.predicted_class_name || "—"}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-[#64748B]">
+                    <div className="text-[11px] font-medium text-[#806D60]">
                       Confidence
                     </div>
-                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#263452]">
+                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#38271F]">
                       {formatPct(activeSample.confidence)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-[#64748B]">
+                    <div className="text-[11px] font-medium text-[#806D60]">
                       Uncertainty
                     </div>
-                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#B45309]">
+                    <div className="mt-0.5 font-mono text-xs font-semibold text-[#B98255]">
                       {formatNum(activeSample.uncertainty)}
                     </div>
                   </div>
@@ -454,7 +486,7 @@ export function AnnotationStudioPage({
 
                 {activeSample.probabilities && (
                   <div>
-                    <p className="mb-1.5 text-xs font-medium text-[#64748B]">
+                    <p className="mb-1.5 text-xs font-medium text-[#806D60]">
                       Calibrated Class Probabilities
                     </p>
                     <ClassProbabilityChart
@@ -488,18 +520,18 @@ export function AnnotationStudioPage({
                         onClick={() => setSelectedLabelId(idx)}
                         className={`flex flex-col items-start rounded-xl border px-3 py-2 text-left transition-all ${
                           isSelected
-                            ? "border-[#4568D9] bg-[#DCE5FF] ring-2 ring-[#4568D9]/25"
-                            : "border-[#BDE4DA] bg-[#F3F5FD] hover:border-[#718BE0]"
+                            ? "border-[#6B3E26] bg-[#FAF3EC] ring-2 ring-[#6B3E26]/20"
+                            : "border-[#E6D6C6] bg-[#FFFFFF] hover:border-[#6B3E26]"
                         }`}
                       >
-                        <span className="font-mono text-[10px] text-[#64748B]">
+                        <span className="font-mono text-[10px] text-[#806D60]">
                           Class {idx}
                         </span>
-                        <span className="text-xs font-semibold text-[#263452]">
+                        <span className="text-xs font-semibold text-[#38271F]">
                           {clsName}
                         </span>
                         {isPred && (
-                          <span className="mt-1 text-[10px] font-medium text-[#4568D9]">
+                          <span className="mt-1 text-[10px] font-medium text-[#6B3E26]">
                             Suggested
                           </span>
                         )}
@@ -508,12 +540,12 @@ export function AnnotationStudioPage({
                   })}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#BDE4DA] pt-4">
-                  <div className="text-xs text-[#64748B]">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E6D6C6] pt-4">
+                  <div className="text-xs text-[#806D60]">
                     {selectedLabelId !== null ? (
                       <span>
                         Selected Label:{" "}
-                        <strong className="font-semibold text-[#263452]">
+                        <strong className="font-semibold text-[#38271F]">
                           {activeSample.class_names[selectedLabelId]}
                         </strong>
                       </span>
@@ -537,16 +569,16 @@ export function AnnotationStudioPage({
       ) : (
         <Card tone="mint">
           <CardContent className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-            <CheckCircle2 className="h-8 w-8 text-[#159C91]" />
+            <CheckCircle2 className="h-8 w-8 text-[#B98255]" />
             <div>
-              <h3 className="text-sm font-semibold text-[#263452]">
+              <h3 className="text-sm font-semibold text-[#38271F]">
                 {currentExp?.mode === "human_in_the_loop"
                   ? currentExp.status === "completed"
                     ? "Human-in-the-Loop Experiment Completed"
                     : "All Queued Samples Annotated!"
                   : "No Samples Queued for Human Annotation"}
               </h3>
-              <p className="mt-1 text-xs text-[#64748B]">
+              <p className="mt-1 text-xs text-[#806D60]">
                 {currentExp?.mode === "human_in_the_loop" &&
                 currentExp.status !== "completed"
                   ? "Ready to retrain the PyTorch model with your human labels and query the next uncertain batch."
@@ -573,12 +605,19 @@ export function AnnotationStudioPage({
         </Card>
       )}
 
+      {/* Continuous Learning Engine Section */}
+      <ContinuousLearningEngine
+        status={clStatus}
+        onTriggerRetrain={handleTriggerContinuousRetrain}
+        isRetraining={isRetrainingCL}
+      />
+
       {/* Label Studio Phase 3 Readiness + Annotation History */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card tone="secondary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Webhook className="h-4 w-4 text-[#159C91]" />
+              <Webhook className="h-4 w-4 text-[#B98255]" />
               <span>Label Studio Integration</span>
             </CardTitle>
             <CardDescription>
@@ -587,14 +626,14 @@ export function AnnotationStudioPage({
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-[#64748B]">Status</span>
+              <span className="text-[#806D60]">Status</span>
               <Badge variant="warning">
                 {lsStatus?.integration_status || "pending_phase_3"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#64748B]">Webhook Route</span>
-              <code className="rounded-md bg-[#DCE5FF] px-2 py-0.5 font-mono text-[11px] text-[#263452]">
+              <span className="text-[#806D60]">Webhook Route</span>
+              <code className="rounded-md bg-[#FAF3EC] border border-[#BFDBFE] px-2 py-0.5 font-mono text-[11px] text-[#6B3E26]">
                 {lsStatus?.webhook_endpoint || "/api/v1/webhooks/label-studio"}
               </code>
             </div>
@@ -675,7 +714,7 @@ export function AnnotationStudioPage({
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-xs text-[#64748B]">
+                        <TableCell className="text-xs text-[#806D60]">
                           {formatShortDate(item.updated_at)}
                         </TableCell>
                       </TableRow>
@@ -684,7 +723,7 @@ export function AnnotationStudioPage({
                 </Table>
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-[#64748B]">
+              <div className="py-8 text-center text-xs text-[#806D60]">
                 No labeled pool records yet for this experiment.
               </div>
             )}

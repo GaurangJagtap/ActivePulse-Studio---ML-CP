@@ -21,7 +21,7 @@ export function LearningCurveChart({
 }: LearningCurveChartProps) {
   if (!rounds.length) {
     return (
-      <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed border-[#C7D3F0] bg-[#EEF1FB]/80 text-xs text-[#64748B]">
+      <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed border-[#E6D6C6] bg-[#FFFCF7] text-xs text-[#806D60]">
         No round metrics recorded yet. Run an active learning experiment to plot the learning curve.
       </div>
     );
@@ -39,33 +39,34 @@ export function LearningCurveChart({
     <div style={{ width: "100%", height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 12, right: 24, left: 4, bottom: 14 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#D5DDF2" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#EFE4D8" />
           <XAxis
             dataKey="n_labeled"
-            tick={{ fontSize: 12, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 12, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
             label={{
               value: "Labeled Samples",
               position: "insideBottom",
               offset: -6,
-              style: { fontSize: 11, fill: "#64748B", fontWeight: 500 },
+              style: { fontSize: 11, fill: "#806D60", fontWeight: 500 },
             }}
           />
           <YAxis
             domain={[0, 100]}
             tickFormatter={(v) => `${v}%`}
-            tick={{ fontSize: 12, fill: "#64748B" }}
-            axisLine={{ stroke: "#C7D3F0" }}
-            tickLine={{ stroke: "#C7D3F0" }}
+            tick={{ fontSize: 12, fill: "#806D60" }}
+            axisLine={{ stroke: "#E6D6C6" }}
+            tickLine={{ stroke: "#E6D6C6" }}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#F3F5FD",
-              borderColor: "#C7D3F0",
-              borderRadius: "10px",
+              backgroundColor: "#FFFCF7",
+              borderColor: "#E6D6C6",
+              borderRadius: "8px",
               fontSize: "12px",
-              color: "#263452",
+              color: "#38271F",
+              boxShadow: "0 4px 12px rgba(56, 39, 31, 0.1)",
             }}
             formatter={(value: number, name: string) => [
               name === "ece" ? value : `${value}%`,
@@ -77,24 +78,24 @@ export function LearningCurveChart({
             ]}
             labelFormatter={(lbl) => `Labeled Samples: ${lbl}`}
           />
-          <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px", color: "#263452" }} />
+          <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px", color: "#38271F" }} />
           <Line
             type="monotone"
             dataKey="accuracy"
             name="Holdout Accuracy"
-            stroke="#4568D9"
+            stroke="#6B3E26"
             strokeWidth={2.75}
-            dot={{ r: 4, fill: "#4568D9", strokeWidth: 1.5, stroke: "#F3F5FD" }}
+            dot={{ r: 4, fill: "#6B3E26", strokeWidth: 1.5, stroke: "#FFFCF7" }}
             activeDot={{ r: 6 }}
           />
           <Line
             type="monotone"
             dataKey="f1"
             name="Macro-F1"
-            stroke="#159C91"
-            strokeWidth={2.25}
+            stroke="#B98255"
+            strokeWidth={2}
             strokeDasharray="4 4"
-            dot={{ r: 3.5, fill: "#159C91" }}
+            dot={{ r: 3.5, fill: "#B98255" }}
           />
         </LineChart>
       </ResponsiveContainer>
