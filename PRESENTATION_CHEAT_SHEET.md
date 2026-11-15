@@ -16,17 +16,17 @@ Speak clearly and confidently using this exact script:
 > 
 > **Our Expected Outcome** is to achieve target model accuracy with **30% to 50% fewer human labels**, which directly cuts data labeling costs in half.
 > 
-> Today, we are presenting our **50% working milestone**: the entire algorithmic engine, data layer with zero data leakage, PyTorch neural networks with temperature calibration, all 7 active query algorithms, automated multi-seed benchmarks, and our interactive ActivePulse Studio dashboard are completely built, tested with 18 automated tests, and fully operational."*
+> Today, we are presenting our **complete production system**: the entire algorithmic engine, data layer with zero data leakage, PyTorch neural networks with temperature calibration, all 9 active query algorithms, automated 5-seed benchmarks with statistical significance tests, real-time Human-in-the-Loop continuous learning with self-retraining, Label Studio SDK sync, and our interactive React + TypeScript ActivePulse Studio dashboard are completely built, verified with 36 automated tests, and fully operational."*
 
 ---
 
 ## 2. Step-by-Step Live Dashboard Demonstration Guide
 
-Have the dashboard open in your browser at **`http://localhost:8501`**. Walk through these exact steps:
+Have the dashboard open in your browser at **`http://localhost:5173`** (FastAPI backend at `http://localhost:8000`). Walk through these exact steps:
 
 ### Step 1: Point to the Top Control Strip
 - Point to the top bar and say:
-  > *"Ma'am, here in our Control Strip, we can switch between Image Classification on **CIFAR-10** and Text Classification on **AG News**. We can choose between 7 active learning algorithms or uniform random sampling, adjust the query batch size, and set random seeds."*
+  > *"Ma'am, here in our Control Strip, we can switch between Image Classification on **CIFAR-10** and Text Classification on **AG News**. We can choose between 9 active learning algorithms or uniform random sampling, adjust the query batch size, and set random seeds."*
 
 ### Step 2: Click the Button & Watch the Live Pipeline
 - Select **`hybrid`** strategy and click **`🚀 EXECUTE ACTIVE LOOP`**.

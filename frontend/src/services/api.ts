@@ -64,6 +64,24 @@ export const api = {
   listStrategies: () => request<StrategyInfo[]>("/strategies"),
 
   // Datasets
+  uploadDataset: async (formData: FormData): Promise<DatasetSummary> => {
+    const res = await fetch(`${API_BASE}/datasets/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      let detail = `Upload failed (${res.status})`;
+      try {
+        const data = await res.json();
+        detail = data.detail || data.message || detail;
+      } catch {
+        // ignore
+      }
+      throw new ApiError(detail, res.status);
+    }
+    return res.json();
+  },
+
   getDatasetStats: (
     datasetId: string,
     params: { max_samples?: number; use_synthetic?: boolean; seed?: number; experiment_id?: string } = {}

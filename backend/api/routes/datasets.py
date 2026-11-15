@@ -1,7 +1,7 @@
 """Dataset inspection and sampling preview endpoints."""
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 
 from backend.api.schemas.common import (
     DatasetSamplesResponse,
@@ -11,8 +11,62 @@ from backend.api.schemas.common import (
 from backend.api.services.catalog_service import get_datasets_catalog
 from backend.api.services.dataset_service import get_dataset_samples, get_dataset_stats
 from backend.api.services.experiment_service import get_experiment_db
+from backend.api.services.upload_service import (
+    process_csv_text_upload,
+    process_image_zip_upload,
+)
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
+
+
+@router.post("/upload", response_model=DatasetSummary, summary="Upload a custom dataset (ZIP images or CSV text)")
+async def upload_dataset(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    modality: str = Form(default="image"),
+    text_column: str = Form(default="text"),
+    label_column: Optional[str] = Form(default="label"),
+) -> DatasetSummary:
+    try:
+        content = await file.read()
+        if len(content) == 0:
+            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+        filename = (file.filename or "").lower()
+        if modality == "image" or filename.endswith(".zip"):
+            if not filename.endswith(".zip"):
+                raise HTTPException(status_code=400, detail="Custom image dataset must be uploaded as a .zip file.")
+            meta = process_image_zip_upload(zip_bytes=content, dataset_name=name)
+        elif modality == "text" or filename.endswith(".csv"):
+            if not filename.endswith(".csv"):
+                raise HTTPException(status_code=400, detail="Custom text dataset must be uploaded as a .csv file.")
+            meta = process_csv_text_upload(
+                csv_bytes=content,
+                dataset_name=name,
+                text_column=text_column,
+                label_column=label_column,
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported modality or file extension. Use .zip (images) or .csv (text).")
+
+        supported_models = ["cifar_cnn", "resnet18"] if meta["modality"] == "image" else ["text_mlp"]
+        return DatasetSummary(
+            id=meta["id"],
+            name=f"{meta['name']} (Custom Upload)",
+            modality=meta["modality"],
+            num_classes=meta["num_classes"],
+            class_names=meta["class_names"],
+            default_model=supported_models[0],
+            supported_models=supported_models,
+            supports_real_download=False,
+            supports_raw_text=(meta["modality"] == "text"),
+            description=meta["description"],
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Upload processing failed: {exc}") from exc
+
 
 
 @router.get("", response_model=List[DatasetSummary], summary="List supported datasets")

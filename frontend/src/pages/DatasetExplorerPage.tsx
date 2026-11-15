@@ -52,7 +52,46 @@ export function DatasetExplorerPage({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Custom Dataset Upload state
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadName, setUploadName] = useState("");
+  const [uploadModality, setUploadModality] = useState<"image" | "text">("image");
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const activeMeta = datasets.find((d) => d.id === datasetId);
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile || !uploadName.trim()) {
+      setUploadMsg({ type: "error", text: "Please provide a dataset name and select a file." });
+      return;
+    }
+    setUploading(true);
+    setUploadMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", uploadFile);
+      fd.append("name", uploadName.trim());
+      fd.append("modality", uploadModality);
+      const res = await api.uploadDataset(fd);
+      setUploadMsg({
+        type: "success",
+        text: `Successfully uploaded ${res.name}! Refreshing catalog...`,
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (err: any) {
+      setUploadMsg({
+        type: "error",
+        text: err.message || "Upload failed. Please check archive format.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -286,15 +325,25 @@ export function DatasetExplorerPage({
                   </div>
                   <p className="leading-relaxed text-[#806D60]">{activeMeta?.description}</p>
 
-                  <div className="rounded-xl border border-dashed border-[#CBD5E1] bg-[#FAF3EC] p-3">
-                    <div className="flex items-center gap-2 font-medium text-[#38271F]">
-                      <UploadCloud className="h-4 w-4 text-[#6B3E26]" />
-                      <span>Custom Dataset Upload</span>
-                      <Badge variant="warning">Pending</Badge>
+                  <div className="rounded-xl border border-dashed border-[#8C6D58] bg-[#FAF3EC] p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-medium text-[#38271F]">
+                        <UploadCloud className="h-5 w-5 text-[#6B3E26]" />
+                        <span>Upload Custom Dataset</span>
+                      </div>
+                      <Badge variant="success">Active</Badge>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#806D60]">
-                      {stats.upload_status_note}
+                    <p className="mt-2 text-xs text-[#806D60]">
+                      Upload your own Image dataset (.zip with class folders or flat images) or Text dataset (.csv).
                     </p>
+                    <Button
+                      size="sm"
+                      className="mt-3 w-full bg-[#6B3E26] hover:bg-[#54311E] text-white"
+                      onClick={() => setUploadModalOpen(true)}
+                    >
+                      <UploadCloud className="mr-2 h-4 w-4" />
+                      Upload New Dataset
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -401,6 +450,128 @@ export function DatasetExplorerPage({
             </Card>
           </>
         )
+      )}
+
+      {/* Upload Custom Dataset Modal Dialog */}
+      {uploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-[#E6D6C6] bg-[#FFFFFF] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#E6D6C6] pb-3">
+              <div className="flex items-center gap-2">
+                <UploadCloud className="h-5 w-5 text-[#6B3E26]" />
+                <h3 className="text-lg font-semibold text-[#38271F]">
+                  Upload Custom Dataset
+                </h3>
+              </div>
+              <button
+                className="text-[#806D60] hover:text-[#38271F] font-bold text-lg"
+                onClick={() => setUploadModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadSubmit} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#38271F] mb-1">
+                  Dataset Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Medical X-Rays, Waste Sorting, Sentiment"
+                  value={uploadName}
+                  onChange={(e) => setUploadName(e.target.value)}
+                  className="w-full rounded-lg border border-[#E6D6C6] px-3 py-2 text-sm text-[#38271F] focus:border-[#6B3E26] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#38271F] mb-1">
+                  Modality
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm text-[#38271F] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="modality"
+                      value="image"
+                      checked={uploadModality === "image"}
+                      onChange={() => setUploadModality("image")}
+                    />
+                    Image Dataset (ZIP file)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-[#38271F] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="modality"
+                      value="text"
+                      checked={uploadModality === "text"}
+                      onChange={() => setUploadModality("text")}
+                    />
+                    Text Dataset (CSV file)
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#38271F] mb-1">
+                  {uploadModality === "image" ? "Select .ZIP Archive" : "Select .CSV File"}
+                </label>
+                <input
+                  type="file"
+                  accept={uploadModality === "image" ? ".zip" : ".csv"}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setUploadFile(e.target.files[0]);
+                      if (!uploadName) {
+                        const base = e.target.files[0].name.replace(/\.[^/.]+$/, "");
+                        setUploadName(base.replace(/[_-]/g, " ").toUpperCase());
+                      }
+                    }
+                  }}
+                  className="w-full text-xs text-[#806D60] file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#FAF3EC] file:text-[#6B3E26] hover:file:bg-[#F3E7DC] cursor-pointer"
+                  required
+                />
+                <p className="mt-1 text-[11px] text-[#806D60]">
+                  {uploadModality === "image"
+                    ? "Zip images grouped in class folders (e.g. dogs/*.jpg, cats/*.jpg) or flat images."
+                    : "CSV with a 'text' column and an optional 'label' column."}
+                </p>
+              </div>
+
+              {uploadMsg && (
+                <div
+                  className={`rounded-lg p-3 text-xs ${
+                    uploadMsg.type === "success"
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
+                  {uploadMsg.text}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUploadModalOpen(false)}
+                  disabled={uploading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-[#6B3E26] hover:bg-[#54311E] text-white"
+                  disabled={uploading}
+                >
+                  {uploading ? "Processing & Normalizing..." : "Import Dataset"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

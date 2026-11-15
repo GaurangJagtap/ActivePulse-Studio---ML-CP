@@ -25,7 +25,7 @@ def build_dataset_adapter(
     use_synthetic: bool = True,
     seed: int = 42,
 ) -> DatasetAdapter:
-    """Instantiate the appropriate DatasetAdapter from src/data/."""
+    """Instantiate the appropriate DatasetAdapter from src/data/ or custom uploads."""
     key = dataset_id.lower()
     if key == "cifar10":
         return CIFAR10Adapter(
@@ -39,30 +39,39 @@ def build_dataset_adapter(
             use_synthetic=use_synthetic,
             seed=seed,
         )
-    raise ValueError(f"Unsupported dataset '{dataset_id}'. Supported: ['cifar10', 'agnews'].")
+
+    # Check for custom uploaded dataset
+    from backend.api.services.upload_service import get_custom_dataset_dir
+    from src.data.custom import CustomDatasetAdapter
+    custom_dir = get_custom_dataset_dir(dataset_id)
+    if custom_dir:
+        return CustomDatasetAdapter(
+            dataset_id=dataset_id,
+            upload_dir=custom_dir,
+            max_samples=max_samples,
+            seed=seed,
+        )
+
+    raise ValueError(f"Unsupported dataset '{dataset_id}'. Supported: ['cifar10', 'agnews'] or custom uploaded datasets.")
 
 
 def build_module_factory(dataset: DatasetAdapter, model_type: str):
     """Return a PyTorch nn.Module factory compatible with skorch NeuralNetClassifier."""
     mtype = model_type.lower()
     ds_name = dataset.name.lower()
+    modality = getattr(dataset, "modality", "image")
 
     if mtype == "cifar_cnn":
-        if ds_name != "cifar10":
-            raise ValueError("Model 'cifar_cnn' requires dataset 'cifar10'.")
         return lambda: CIFARConvNet(num_classes=dataset.num_classes, dropout_rate=0.2)
 
     if mtype == "resnet18":
-        if ds_name != "cifar10":
-            raise ValueError("Model 'resnet18' requires dataset 'cifar10'.")
         return lambda: ResNet18TransferNet(
             num_classes=dataset.num_classes, pretrained=False, dropout_rate=0.2
         )
 
     if mtype == "text_mlp":
-        if ds_name != "agnews":
-            raise ValueError("Model 'text_mlp' requires dataset 'agnews'.")
-        return lambda: TextMLP(in_features=64, num_classes=dataset.num_classes, dropout_rate=0.2)
+        in_feat = 64
+        return lambda: TextMLP(in_features=in_feat, num_classes=dataset.num_classes, dropout_rate=0.2)
 
     raise ValueError(
         f"Unsupported model_type '{model_type}'. Supported: ['cifar_cnn', 'resnet18', 'text_mlp']."

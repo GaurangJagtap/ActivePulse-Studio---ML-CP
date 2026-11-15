@@ -156,7 +156,10 @@ _STRATEGY_DETAILS = {
 
 
 def get_datasets_catalog() -> List[DatasetSummary]:
-    return _DATASET_CATALOG
+    from backend.api.services.upload_service import list_custom_dataset_summaries
+    custom_datasets = list_custom_dataset_summaries()
+    return _DATASET_CATALOG + custom_datasets
+
 
 
 def get_models_catalog() -> List[ModelInfo]:

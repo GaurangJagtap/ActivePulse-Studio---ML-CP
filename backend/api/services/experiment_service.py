@@ -131,7 +131,23 @@ def _write_json(path: str, data: Dict) -> None:
     tmp_path = f"{path}.tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
-    os.replace(tmp_path, path)
+    # Retry loop for Windows atomic file replacement in concurrent threads
+    for attempt in range(5):
+        try:
+            os.replace(tmp_path, path)
+            break
+        except (PermissionError, OSError):
+            if attempt == 4:
+                # Fallback directly to direct write if rename fails
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+                try:
+                    os.remove(tmp_path)
+                except OSError:
+                    pass
+                break
+            time.sleep(0.05)
+
 
 
 def _update_meta(exp_id: str, **updates) -> Dict:

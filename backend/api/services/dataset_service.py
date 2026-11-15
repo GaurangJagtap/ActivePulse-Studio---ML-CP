@@ -103,15 +103,23 @@ def get_dataset_stats(
         n_queued = 0
         n_labeled = 0
 
-    modality = "image" if adapter.name == "cifar10" else "text_embedding"
+    modality = getattr(adapter, "modality", "image" if adapter.name == "cifar10" else "text_embedding")
+    is_custom = adapter.name.startswith("custom_")
+    display_name = (
+        f"{adapter.name.replace('custom_', '').title()} (Custom Upload)"
+        if is_custom
+        else ("CIFAR-10 (Image Vision)" if adapter.name == "cifar10" else "AG News (Text Embeddings)")
+    )
     return DatasetStatsResponse(
         dataset_id=adapter.name,
-        name="CIFAR-10 (Image Vision)" if adapter.name == "cifar10" else "AG News (Text Embeddings)",
+        name=display_name,
         modality=modality,
         use_synthetic=use_synthetic,
         max_samples=len(all_ids),
         num_classes=adapter.num_classes,
         class_names=adapter.class_names,
+        upload_supported=True,
+        upload_status_note="Custom image (ZIP) and text (CSV) upload is active. Uploaded datasets can be queried and labeled in real-time.",
         split_stats=SplitStats(
             n_total=n_total,
             n_pool_unlabeled=n_pool_unlabeled,
