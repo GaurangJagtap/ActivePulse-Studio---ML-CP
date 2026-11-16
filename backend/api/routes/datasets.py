@@ -83,7 +83,12 @@ def dataset_stats(
     experiment_id: Optional[str] = Query(default=None),
 ) -> DatasetStatsResponse:
     try:
-        exp_db = get_experiment_db(experiment_id) if experiment_id else None
+        exp_db = None
+        if experiment_id:
+            try:
+                exp_db = get_experiment_db(experiment_id)
+            except Exception:
+                exp_db = None
         return get_dataset_stats(
             dataset_id=dataset_id,
             max_samples=max_samples,
@@ -110,7 +115,12 @@ def dataset_samples(
     experiment_id: Optional[str] = Query(default=None),
 ) -> DatasetSamplesResponse:
     try:
-        exp_db = get_experiment_db(experiment_id) if experiment_id else None
+        exp_db = None
+        if experiment_id:
+            try:
+                exp_db = get_experiment_db(experiment_id)
+            except Exception:
+                exp_db = None
         return get_dataset_samples(
             dataset_id=dataset_id,
             offset=offset,

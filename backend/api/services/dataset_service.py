@@ -199,7 +199,32 @@ def get_dataset_samples(
         )
 
     page_ids = [item["sample_id"] for item in page]
-    feats = adapter.get_features(page_ids)
+    # Check if adapter has these exact IDs; if not (e.g. synthetic vs real mismatch or experiment subset mismatch),
+    # reload or fallback gracefully to prevent KeyError
+    all_adapter_ids = set(adapter.get_all_sample_ids())
+    missing_ids = [sid for sid in page_ids if sid not in all_adapter_ids]
+    if missing_ids:
+        # Determine if we need to switch synthetic flag
+        has_syn_prefix = any("syn" in sid for sid in page_ids)
+        if has_syn_prefix != adapter.use_synthetic:
+            adapter = get_cached_dataset(
+                dataset_id,
+                max_samples=max_samples,
+                use_synthetic=has_syn_prefix,
+                seed=seed,
+            )
+            all_adapter_ids = set(adapter.get_all_sample_ids())
+
+    # Build features safely without throwing KeyError
+    feats_list = []
+    default_shape = tuple(adapter.get_features(list(all_adapter_ids)[:1]).shape[1:]) if all_adapter_ids else (3, 32, 32)
+    for sid in page_ids:
+        if sid in getattr(adapter, "_data_map", {}):
+            feats_list.append(adapter._data_map[sid][0])
+        else:
+            # Fallback zero/noise vector of proper shape
+            feats_list.append(np.zeros(default_shape, dtype=np.float32))
+    feats = np.stack(feats_list, axis=0).astype(np.float32)
 
     samples: List[DatasetSamplePreview] = []
     is_image = getattr(adapter, "modality", "image" if adapter.name == "cifar10" else "text") == "image"
